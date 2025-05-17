@@ -1,0 +1,17 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "createpayforpower:block/network_stress_limiter",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "createpayforpower:block/network_stress_limiter"
+    },
+    "axis=z": {
+      "model": "createpayforpower:block/network_stress_limiter",
+      "x": 90,
+      "y": 180
+    }
+  }
+}
