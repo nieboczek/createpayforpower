@@ -1,0 +1,51 @@
+package nieboczek.createpayforpower.displaysource;
+
+import com.simibubi.create.content.redstone.displayLink.DisplayLinkContext;
+import com.simibubi.create.content.redstone.displayLink.source.SingleLineDisplaySource;
+import com.simibubi.create.content.redstone.displayLink.target.DisplayTargetStats;
+import com.simibubi.create.foundation.gui.ModularGuiLineBuilder;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import nieboczek.createpayforpower.CPFPLang;
+import nieboczek.createpayforpower.block.powermeter.PowerMeterBlockEntity;
+
+public class PowerMeterStatusDisplaySource extends SingleLineDisplaySource {
+    @Override
+    protected MutableComponent provideLine(DisplayLinkContext context, DisplayTargetStats stats) {
+        if (!(context.getSourceBlockEntity() instanceof PowerMeterBlockEntity entity))
+            return EMPTY_LINE;
+
+        int mode = context.sourceConfig().getInt("Mode");
+
+        return switch (mode) {
+            case 0 -> Component.literal("69 h");
+            case 1 -> Component.literal("69 ksuh");
+            case 2 -> Component.literal(entity.ksuh + " ksuh");
+            default -> EMPTY_LINE;
+        };
+    }
+
+    @Override
+    protected boolean allowsLabeling(DisplayLinkContext context) {
+        return true;
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void initConfigurationWidgets(DisplayLinkContext context, ModularGuiLineBuilder builder, boolean isFirstLine) {
+        super.initConfigurationWidgets(context, builder, isFirstLine);
+
+        // no idea what this does but :shrug:
+        if (isFirstLine) return;
+
+        builder.addSelectionScrollInput(0, 140, (si, l) -> si
+                .forOptions(CPFPLang.translatedOptions("display_source.power_meter_status",
+                        "time_left", "ksuh_left", "ksuh"
+                ))
+                // Less work for me LMAO
+                .titled(Component.translatable("create.display_source.kinetic_stress.display")),
+                "Mode");
+    }
+}

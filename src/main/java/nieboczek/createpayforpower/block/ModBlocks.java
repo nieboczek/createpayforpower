@@ -5,6 +5,8 @@ import com.simibubi.create.AllTags;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import nieboczek.createpayforpower.CreatePayForPower;
+import nieboczek.createpayforpower.block.networkstresslimiter.NetworkStressLimiterBlock;
+import nieboczek.createpayforpower.block.powermeter.PowerMeterBlock;
 
 public class ModBlocks {
     static {

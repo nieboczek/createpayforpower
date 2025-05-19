@@ -1,5 +1,5 @@
 {
-  "parent": "createpayforpower:block/network_stress_limiter",
+  "parent": "createpayforpower:block/power_meter",
   "display": {
     "gui": {
       "rotation": [ 30, 45, 0 ],

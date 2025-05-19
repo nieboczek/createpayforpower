@@ -1,0 +1,54 @@
+{
+  "variants": {
+    "axis_along_first=false,facing=down": {
+      "model": "createpayforpower:block/power_meter",
+      "x": 180
+    },
+    "axis_along_first=false,facing=east": {
+      "model": "createpayforpower:block/power_meter"
+    },
+    "axis_along_first=false,facing=north": {
+      "model": "createpayforpower:block/power_meter",
+      "x": 90,
+      "y": 270
+    },
+    "axis_along_first=false,facing=south": {
+      "model": "createpayforpower:block/power_meter",
+      "x": 90,
+      "y": 90
+    },
+    "axis_along_first=false,facing=up": {
+      "model": "createpayforpower:block/power_meter"
+    },
+    "axis_along_first=false,facing=west": {
+      "model": "createpayforpower:block/power_meter",
+      "y": 180
+    },
+    "axis_along_first=true,facing=down": {
+      "model": "createpayforpower:block/power_meter",
+      "x": 180,
+      "y": 90
+    },
+    "axis_along_first=true,facing=east": {
+      "model": "createpayforpower:block/power_meter",
+      "x": 90
+    },
+    "axis_along_first=true,facing=north": {
+      "model": "createpayforpower:block/power_meter",
+      "y": 270
+    },
+    "axis_along_first=true,facing=south": {
+      "model": "createpayforpower:block/power_meter",
+      "y": 90
+    },
+    "axis_along_first=true,facing=up": {
+      "model": "createpayforpower:block/power_meter",
+      "y": 90
+    },
+    "axis_along_first=true,facing=west": {
+      "model": "createpayforpower:block/power_meter",
+      "x": 90,
+      "y": 180
+    }
+  }
+}

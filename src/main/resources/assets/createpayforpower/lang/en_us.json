@@ -1,5 +1,12 @@
 {
-  "itemGroup.createpayforpower": "Example Mod Tab",
-  "block.createpayforpower.example_block": "Example Block",
-  "item.createpayforpower.example_item": "Example Item"
+  "block.createpayforpower.network_stress_limiter": "Don't place this, the world might crash :)",
+  "block.createpayforpower.power_meter": "Power Meter",
+  "createpayforpower.gui.power_meter.mode": "Mode",
+  "createpayforpower.gui.power_meter.mode.colon": "Mode:",
+  "createpayforpower.gui.power_meter.mode.redstone": "Redstone",
+  "createpayforpower.gui.power_meter.mode.item": "Item",
+  "createpayforpower.display_source.power_meter_status": "Power Meter Status",
+  "createpayforpower.display_source.power_meter_status.time_left": "Time Left Until No Power",
+  "createpayforpower.display_source.power_meter_status.ksuh_left": "ksuh Left Until No Power",
+  "createpayforpower.display_source.power_meter_status.ksuh": "Total ksuh"
 }

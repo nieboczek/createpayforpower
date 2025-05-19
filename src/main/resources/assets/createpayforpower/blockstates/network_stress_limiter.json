@@ -1,17 +1,27 @@
 {
   "variants": {
-    "axis=x": {
+    "facing=down": {
       "model": "createpayforpower:block/network_stress_limiter",
-      "x": 90,
-      "y": 90
+      "x": 270
     },
-    "axis=y": {
+    "facing=east": {
+      "model": "createpayforpower:block/network_stress_limiter",
+      "y": 270
+    },
+    "facing=north": {
       "model": "createpayforpower:block/network_stress_limiter"
     },
-    "axis=z": {
+    "facing=south": {
       "model": "createpayforpower:block/network_stress_limiter",
-      "x": 90,
       "y": 180
+    },
+    "facing=up": {
+      "model": "createpayforpower:block/network_stress_limiter",
+      "x": 90
+    },
+    "facing=west": {
+      "model": "createpayforpower:block/network_stress_limiter",
+      "y": 90
     }
   }
 }

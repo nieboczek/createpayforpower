@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "nieboczek.createpayforpower.mixin",
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "KineticNetworkMixin",
+    "TorquePropagatorMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
