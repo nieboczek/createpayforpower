@@ -18,6 +18,7 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
     // TODO: yeah kinda fucked, at least I can spend 8 hours on trying to make UI.
 
     // Note to self: 1 suh = 1su for 1 hour :: 1 ksuh = 1000su for 1 hour
+    public PowerMeterInventory inventory;
     public boolean itemMode = true;
     public float sus = 0;  // I fucking promise this means "stress unit seconds" like "Ws" being "Watt seconds"
     public long ksuh = 0;  // kilo stress unit hours
@@ -25,6 +26,7 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
 
     public PowerMeterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+        this.inventory = new PowerMeterInventory();
     }
 
     @Override

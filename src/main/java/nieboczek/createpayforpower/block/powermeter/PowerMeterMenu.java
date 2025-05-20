@@ -1,5 +1,6 @@
 package nieboczek.createpayforpower.block.powermeter;
 
+import com.simibubi.create.foundation.gui.menu.IClearableMenu;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -10,9 +11,11 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.SlotItemHandler;
 import nieboczek.createpayforpower.ModMenus;
 
-public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
+public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> implements IClearableMenu {
     public PowerMeterMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
@@ -41,7 +44,7 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
 
     @Override
     protected void addSlots() {
-        // TODO: add stuff here
+        addSlot(new SlotItemHandler(contentHolder.inventory, 0, 11, 24));
 
         addPlayerSlots(37, 161);
     }
@@ -61,5 +64,10 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
         // TODO: probably add stuff here
 
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public void clearContents() {
+        contentHolder.inventory.setStackInSlot(0, ItemStack.EMPTY);
     }
 }
