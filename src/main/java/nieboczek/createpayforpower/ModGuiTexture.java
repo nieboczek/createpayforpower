@@ -10,12 +10,10 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.api.distmarker.Dist;
 
 public enum ModGuiTexture implements ScreenElement, TextureSheetSegment {
-    POWER_METER_BG("power_meter", 182, 103),
-    SLOT("power_meter", 182, 0, 20, 20),
+    POWER_METER_BG("power_meter", 182, 163),
+    POWER_METER_SLOT("power_meter", 182, 0, 20, 20),
 
     ;  // Don't remove this semicolon, this one is very important to me.
-
-//    public static final int FONT_COLOR = 0x575F7A;
 
     public final ResourceLocation location;
     private final int width;

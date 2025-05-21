@@ -40,7 +40,7 @@ public class PowerMeterStatusDisplaySource extends SingleLineDisplaySource {
         // no idea what this does but :shrug:
         if (isFirstLine) return;
 
-        builder.addSelectionScrollInput(0, 140, (si, l) -> si
+        builder.addSelectionScrollInput(0, 137, (si, l) -> si
                 .forOptions(CPFPLang.translatedOptions("display_source.power_meter_status",
                         "time_left", "ksuh_left", "ksuh"
                 ))

@@ -13,12 +13,18 @@ public class CPFPLang extends Lang {
     public static List<Component> translatedOptions(String prefix, String... keys) {
         List<Component> result = new ArrayList<>(keys.length);
         for (String key : keys)
-            result.add(translate((prefix != null ? prefix + "." : "") + key).component());
+            result.add(translate(prefix + "." + key).component());
         return result;
     }
 
     public static LangBuilder builder() {
         return new LangBuilder(CreatePayForPower.MOD_ID);
+    }
+
+    public static LangBuilder choice(boolean chooseLeft, String prefix, String left, String right) {
+        if (chooseLeft)
+            return builder().translate(prefix + "." + left);
+        return builder().translate(prefix + "." + right);
     }
 
     public static LangBuilder translate(String langKey, Object... args) {

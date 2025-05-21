@@ -7,12 +7,12 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.items.SlotItemHandler;
+import nieboczek.createpayforpower.CreatePayForPower;
 import nieboczek.createpayforpower.ModMenus;
 
 public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> implements IClearableMenu {
@@ -53,21 +53,65 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> implements I
     protected void saveData(PowerMeterBlockEntity contentHolder) {}
 
     @Override
-    public ItemStack quickMoveStack(Player player, int i) {
-        Slot clickedSlot = getSlot(i);
-
-        if (!clickedSlot.hasItem())
-            return ItemStack.EMPTY;
-
-        ItemStack stack = clickedSlot.getItem();
-
-        // TODO: probably add stuff here
-
-        return ItemStack.EMPTY;
+    public void clearContents() {
+        contentHolder.inventory.setStackInSlot(0, ItemStack.EMPTY);
     }
 
     @Override
-    public void clearContents() {
-        contentHolder.inventory.setStackInSlot(0, ItemStack.EMPTY);
+    public void clicked(int slotId, int button, ClickType clickType, Player player) {
+        if (slotId != 0) {
+            super.clicked(slotId, button, clickType, player);
+            return;
+        }
+
+        if (clickType == ClickType.THROW) return;
+
+        ItemStack held = getCarried();
+        int slot = slotId;
+
+        if (clickType == ClickType.CLONE) {
+            if (player.isCreative() && held.isEmpty()) {
+                ItemStack stack = contentHolder.inventory.getStackInSlot(slot).copy();
+                stack.setCount(stack.getMaxStackSize());
+                setCarried(stack);
+            }
+            return;
+        }
+
+        ItemStack inserted;
+        if (held.isEmpty()) {
+            inserted = ItemStack.EMPTY;
+        } else {
+            inserted = held.copy();
+            inserted.setCount(1);
+        }
+        contentHolder.inventory.setStackInSlot(slot, inserted);
+        getSlot(slot).setChanged();
+    }
+
+    @Override
+    protected boolean moveItemStackTo(ItemStack stack, int startIndex, int endIndex, boolean reverseDirection) {
+        return false;
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player playerIn, int index) {
+        if (index < 36) {
+            ItemStack stackToInsert = playerInventory.getItem(index);
+            for (int i = 0; i < contentHolder.inventory.getSlots(); i++) {
+                ItemStack stack = contentHolder.inventory.getStackInSlot(i);
+                if (stack.isEmpty()) {
+                    ItemStack copy = stackToInsert.copy();
+                    copy.setCount(1);
+                    contentHolder.inventory.insertItem(i, copy, false);
+                    getSlot(i + 36).setChanged();
+                    break;
+                }
+            }
+        } else {
+            contentHolder.inventory.extractItem(index - 36, 1, false);
+            getSlot(index).setChanged();
+        }
+        return ItemStack.EMPTY;
     }
 }
