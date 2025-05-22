@@ -48,6 +48,7 @@ public class CreatePayForPower {
         ModBlocks.register();
         ModBlockEntities.register();
         ModMenus.register();
+        ModPacket.register();
 
         CREATIVE_MODE_TAB_REGISTER.register(modEventBus);
     }

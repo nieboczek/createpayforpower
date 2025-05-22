@@ -18,6 +18,5 @@
   "createpayforpower.gui.power_meter.on.item": "On Item Inserted:",
   "createpayforpower.gui.power_meter.on.redstone": "On Receive Redstone Signal:",
   "createpayforpower.gui.power_meter.time_left": "Time Left:",
-  "createpayforpower.gui.power_meter.total_hours_used": "Total Hours Used:",
-  "createpayforpower.gui.power_meter.total_ksuh_used": "Total ksuh Used:"
+  "createpayforpower.gui.power_meter.total_used": "Total Used:"
 }
