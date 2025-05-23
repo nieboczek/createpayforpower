@@ -5,12 +5,12 @@ import net.createmod.catnip.net.base.CatnipPacketRegistry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import nieboczek.createpayforpower.block.powermeter.PowerMeterScreenPacket;
+import nieboczek.createpayforpower.block.powermeter.PowerMeterConfigurePacket;
 
 import java.util.Locale;
 
 public enum ModPacket implements BasePacketPayload.PacketTypeProvider {
-    CONFIGURE_POWER_METER(PowerMeterScreenPacket.class, PowerMeterScreenPacket.STREAM_CODEC),
+    CONFIGURE_POWER_METER(PowerMeterConfigurePacket.class, PowerMeterConfigurePacket.STREAM_CODEC),
 
     ; // This semicolon is also very important to me.
 

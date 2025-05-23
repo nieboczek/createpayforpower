@@ -12,6 +12,8 @@ import net.neoforged.api.distmarker.Dist;
 public enum ModGuiTexture implements ScreenElement, TextureSheetSegment {
     POWER_METER_BG("power_meter", 182, 163),
     POWER_METER_SLOT("power_meter", 182, 0, 20, 20),
+    POWER_METER_UNLOCKED("power_meter", 208, 0, 16, 16),
+    POWER_METER_LOCKED("power_meter", 224, 0, 16, 16),
 
     ;  // Don't remove this semicolon, this one is very important to me.
 

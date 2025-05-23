@@ -9,6 +9,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -23,6 +24,7 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
     public ItemStackHandler inventory;
     public boolean hourMeasurement = true;
     public boolean itemMode = true;
+    public boolean unlocked = true;
     public int hoursUsed = 0;
     public int increaseBy = 1;  // increase `thingsLeft` on item get / receive redstone
     public int thingsLeft = 0;  // ksuh/hours left
@@ -32,7 +34,13 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
 
     public PowerMeterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        this.inventory = new ItemStackHandler(1);
+        this.inventory = new ItemStackHandler(1) {
+            @Override
+            protected void onContentsChanged(int slot) {
+                super.onContentsChanged(slot);
+                setChanged();
+            }
+        };
     }
 
     @Override
@@ -43,6 +51,8 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
 
         compound.put("hourMeasurement", ByteTag.valueOf(hourMeasurement));
         compound.put("itemMode", ByteTag.valueOf(itemMode));
+        compound.put("unlocked", ByteTag.valueOf(unlocked));
+        compound.put("ticksPassed", IntTag.valueOf(ticksPassed));
         compound.put("increaseBy", IntTag.valueOf(increaseBy));
         compound.put("thingsLeft", IntTag.valueOf(thingsLeft));
         compound.put("ksuh", LongTag.valueOf(ksuh));
@@ -58,6 +68,8 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
 
         hourMeasurement = compound.getBoolean("hourMeasurement");
         itemMode = compound.getBoolean("itemMode");
+        unlocked = compound.getBoolean("unlocked");
+        ticksPassed = compound.getInt("ticksPassed");
         increaseBy = compound.getInt("increaseBy");
         thingsLeft = compound.getInt("thingsLeft");
         ksuh = compound.getLong("ksuh");
@@ -89,7 +101,7 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
             // Go place your comment about this situation above this one.
             sus += stress;
 
-            // 3_600_000 being 1000su * 60 minutes * 60 seconds
+            // 3_600_000 being 1000su * 60 minutes * 60 seconds (AKA ksuh)
             if (sus >= 3_600_000) {
                 sus -= 3_600_000;
                 ksuh++;
@@ -102,14 +114,36 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
         }
     }
 
-    private void checkStatus() {
+    public void checkStatus() {
         if (thingsLeft <= 0) {
             CreatePayForPower.LOGGER.warn("PowerMeter has ran out of things!");
+            ticksPassed = 0;
         }
     }
 
+    public void increaseThings() {
+        thingsLeft += increaseBy;
+    }
+
     public String getTimeLeft() {
-        return null;
+        int totalTicksLeft = (int)(thingsLeft * 72000L - ticksPassed);
+        if (totalTicksLeft <= 0) return "0s";
+
+        int hours = totalTicksLeft / 72000;
+        int minutes = (totalTicksLeft % 72000) / 1200;
+        int seconds = (totalTicksLeft % 1200) / 20;
+
+        if (hours > 0) {
+            return hours + "h " + minutes + "min";
+        } else if (minutes > 0) {
+            return minutes + "min " + seconds + "s";
+        } else {
+            return seconds + "s";
+        }
+    }
+
+    public Item getItemFilter() {
+        return inventory.getStackInSlot(0).getItem();
     }
 
     @Override

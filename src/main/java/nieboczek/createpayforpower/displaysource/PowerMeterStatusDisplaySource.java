@@ -19,12 +19,21 @@ public class PowerMeterStatusDisplaySource extends SingleLineDisplaySource {
 
         int mode = context.sourceConfig().getInt("Mode");
 
-        return switch (mode) {
-            case 0 -> Component.literal("69 h");
-            case 1 -> Component.literal("69 ksuh");
-            case 2 -> Component.literal(entity.ksuh + " ksuh");
-            default -> EMPTY_LINE;
-        };
+        return Component.literal(switch (mode) {
+            case 0 -> {
+                if (!entity.hourMeasurement)
+                    yield "USING KSUH MODE";
+                yield entity.getTimeLeft();
+            }
+            case 1 -> {
+                if (entity.hourMeasurement)
+                    yield "USING TIME MODE";
+                yield entity.thingsLeft + " ksuh";
+            }
+            case 2 -> entity.ksuh + " ksuh";
+            case 3 -> entity.hoursUsed + " h";
+            default -> "";
+        });
     }
 
     @Override
@@ -42,7 +51,7 @@ public class PowerMeterStatusDisplaySource extends SingleLineDisplaySource {
 
         builder.addSelectionScrollInput(0, 137, (si, l) -> si
                 .forOptions(CPFPLang.translatedOptions("display_source.power_meter_status",
-                        "time_left", "ksuh_left", "ksuh"
+                        "time_left", "ksuh_left", "ksuh", "hours_used"
                 ))
                 // Less work for me LMAO
                 .titled(Component.translatable("create.display_source.kinetic_stress.display")),

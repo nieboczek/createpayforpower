@@ -2,6 +2,7 @@
   "block.createpayforpower.network_stress_limiter": "Network Stress Limiter",
   "block.createpayforpower.power_meter": "Power Meter",
   "createpayforpower.display_source.power_meter_status": "Power Meter Status",
+  "createpayforpower.display_source.power_meter_status.hours_used": "Total Hours Used",
   "createpayforpower.display_source.power_meter_status.ksuh": "Total ksuh Used",
   "createpayforpower.display_source.power_meter_status.ksuh_left": "ksuh Left",
   "createpayforpower.display_source.power_meter_status.time_left": "Time Left",
@@ -18,5 +19,8 @@
   "createpayforpower.gui.power_meter.on.item": "On Item Inserted:",
   "createpayforpower.gui.power_meter.on.redstone": "On Receive Redstone Signal:",
   "createpayforpower.gui.power_meter.time_left": "Time Left:",
+  "createpayforpower.gui.power_meter.tooltip.reset": "Reset time/ksuh left",
+  "createpayforpower.gui.power_meter.tooltip.unlock": "Allow UI access for other people",
+  "createpayforpower.gui.power_meter.tooltip.lock": "Disallow UI access for other people",
   "createpayforpower.gui.power_meter.total_used": "Total Used:"
 }

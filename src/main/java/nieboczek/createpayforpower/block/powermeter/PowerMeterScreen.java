@@ -1,10 +1,13 @@
 package nieboczek.createpayforpower.block.powermeter;
 
+import com.simibubi.create.foundation.gui.AllIcons;
+import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.ScrollInput;
 import com.simibubi.create.foundation.gui.widget.SelectionScrollInput;
 import net.createmod.catnip.platform.CatnipServices;
 import nieboczek.createpayforpower.CPFPLang;
 import nieboczek.createpayforpower.ModGuiTexture;
+import nieboczek.createpayforpower.block.powermeter.PowerMeterConfigurePacket.Option;
 import com.simibubi.create.foundation.gui.AllGuiTextures;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import net.minecraft.client.gui.GuiGraphics;
@@ -12,8 +15,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu> {
-    // TODO: Save the filter item!!
     private static final ModGuiTexture BG = ModGuiTexture.POWER_METER_BG;
+
+    private IconButton unlockButton;
+    private IconButton lockButton;
 
     public PowerMeterScreen(PowerMeterMenu container, Inventory inv, Component title) {
         super(container, inv, title);
@@ -31,14 +36,17 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         // Mode: Item/Redstone
         ScrollInput mode = new SelectionScrollInput(x + 80, y + 22, 82, 20)
                 .forOptions(CPFPLang.translatedOptions("gui.power_meter.mode", "item", "redstone"))
-                .calling(idx -> setItemMode(idx == 0))
+                .calling(i -> sendPacket(i == 0 ? Option.ENABLE_ITEM_MODE : Option.DISABLE_ITEM_MODE))
                 .setState(menu.contentHolder.itemMode ? 0 : 1)
                 .titled(CPFPLang.translate("gui.power_meter.mode").component());
 
         // Add VALUE time/ksuh
         @SuppressWarnings("Convert2MethodRef")
         ScrollInput value = new ScrollInput(x + 46, y + 58, 62, 20)
-                .calling(val -> setIncreaseBy(val))
+                .calling(val -> {
+                    menu.contentHolder.increaseBy = val;
+                    sendPacket(Option.UPDATE_INCREASE_BY);
+                })
                 .withRange(1, 10_001)
                 .withShiftStep(10)
                 .setState(menu.contentHolder.increaseBy)
@@ -47,35 +55,49 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         // Add value TIME/KSUH
         ScrollInput measurement = new SelectionScrollInput(x + 108, y + 58, 54, 20)
                 .forOptions(CPFPLang.translatedOptions("gui.power_meter.measurement", "hour", "ksuh"))
-                .calling(idx -> setHourMeasurement(idx == 0))
+                .calling(i -> sendPacket(i == 0 ? Option.ENABLE_HOUR_MEASUREMENT : Option.DISABLE_HOUR_MEASUREMENT))
                 .setState(menu.contentHolder.hourMeasurement ? 0 : 1)
                 .titled(CPFPLang.translate("gui.power_meter.measurement").component());
 
-        addRenderableWidget(mode);
-        addRenderableWidget(value);
-        addRenderableWidget(measurement);
+        addRenderableWidgets(mode, value, measurement);
+
+        IconButton confirmButton = new IconButton(x + 149, y + 139, AllIcons.I_CONFIRM);
+        confirmButton.withCallback(() -> minecraft.player.closeContainer());
+
+        IconButton resetButton = new IconButton(x + 120, y + 139, AllIcons.I_CONFIG_RESET);
+        resetButton.setToolTip(CPFPLang.translate("gui.power_meter.tooltip.reset").component());
+        resetButton.withCallback(() -> sendPacket(Option.RESET));
+
+        unlockButton = new IconButton(x + 96, y + 139, ModGuiTexture.POWER_METER_UNLOCKED);
+        unlockButton.green = menu.contentHolder.unlocked;
+        unlockButton.setToolTip(CPFPLang.translate("gui.power_meter.tooltip.unlock").component());
+        unlockButton.withCallback(() -> {
+            lockButton.green = false;
+            unlockButton.green = true;
+            sendPacket(Option.UNLOCK);
+        });
+
+        lockButton = new IconButton(x + 78, y + 139, ModGuiTexture.POWER_METER_LOCKED);
+        lockButton.green = !menu.contentHolder.unlocked;
+        lockButton.setToolTip(CPFPLang.translate("gui.power_meter.tooltip.lock").component());
+        lockButton.withCallback(() -> {
+            unlockButton.green = false;
+            lockButton.green = true;
+            sendPacket(Option.LOCK);
+        });
+
+        addRenderableWidgets(confirmButton, resetButton, unlockButton, lockButton);
     }
 
-    private void setItemMode(boolean itemMode) {
-        CatnipServices.NETWORK.sendToServer(new PowerMeterScreenPacket(itemMode, menu.contentHolder.increaseBy, menu.contentHolder.hourMeasurement));
-        menu.contentHolder.itemMode = itemMode;
-    }
-
-    private void setIncreaseBy(int increaseBy) {
-        CatnipServices.NETWORK.sendToServer(new PowerMeterScreenPacket(menu.contentHolder.itemMode, increaseBy, menu.contentHolder.hourMeasurement));
-        menu.contentHolder.increaseBy = increaseBy;
-    }
-
-    private void setHourMeasurement(boolean hourMeasurement) {
-        CatnipServices.NETWORK.sendToServer(new PowerMeterScreenPacket(menu.contentHolder.itemMode, menu.contentHolder.increaseBy, hourMeasurement));
-        menu.contentHolder.hourMeasurement = hourMeasurement;
+    private void sendPacket(Option option) {
+        CatnipServices.NETWORK.sendToServer(new PowerMeterConfigurePacket(option, menu.contentHolder.increaseBy));
+        PowerMeterConfigurePacket.executeOptionResult(menu, option);
     }
 
     @Override
     protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
-        // FIXME: In Create Mod's code we have this if check here. Consider adding
-//        if (this != minecraft.screen)
-//            return; // stencil buffer does not cooperate with ponders gui fade out
+        if (this != minecraft.screen)
+            return; // stencil buffer does not cooperate with ponders gui fade out
 
         int invX = getLeftOfCentered(AllGuiTextures.PLAYER_INVENTORY.getWidth());
         int invY = topPos + BG.getHeight() + 2;
@@ -117,20 +139,24 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         Component left = CPFPLang.choice(entity.hourMeasurement, "gui.power_meter", "time_left", "ksuh_left").component();
         graphics.drawString(font, left, x + 16, y + 90, 0xffffff);
 
-        String leftValue = Integer.toString(entity.thingsLeft);
-        graphics.drawString(font, leftValue, x + 104, y + 90, 0xffffff);
+        String leftValue;
+        if (entity.hourMeasurement)
+            leftValue = entity.getTimeLeft();
+        else
+            leftValue = entity.thingsLeft + " ksuh";
+
+        graphics.drawString(font, leftValue, x + 92, y + 90, 0xffffff);
 
         // Total Used:
         Component totalUsed = CPFPLang.translate("gui.power_meter.total_used").component();
         graphics.drawString(font, totalUsed, x + 16, y + 112, 0xffffff);
 
         String totalUsedValue;
-
         if (entity.hourMeasurement)
             totalUsedValue = entity.hoursUsed + " h";
         else
             totalUsedValue = entity.ksuh + " ksuh";
 
-        graphics.drawString(font, totalUsedValue, x + 104, y + 112, 0xffffff);
+        graphics.drawString(font, totalUsedValue, x + 92, y + 112, 0xffffff);
     }
 }
