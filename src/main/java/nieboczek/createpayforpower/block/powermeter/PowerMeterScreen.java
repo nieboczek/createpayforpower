@@ -41,7 +41,6 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
                 .titled(CPFPLang.translate("gui.power_meter.mode").component());
 
         // Add VALUE time/ksuh
-        @SuppressWarnings("Convert2MethodRef")
         ScrollInput value = new ScrollInput(x + 46, y + 58, 62, 20)
                 .calling(val -> {
                     menu.contentHolder.increaseBy = val;
@@ -64,9 +63,13 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         IconButton confirmButton = new IconButton(x + 149, y + 139, AllIcons.I_CONFIRM);
         confirmButton.withCallback(() -> minecraft.player.closeContainer());
 
+        addRenderableWidget(confirmButton);
+
         IconButton resetButton = new IconButton(x + 120, y + 139, AllIcons.I_CONFIG_RESET);
         resetButton.setToolTip(CPFPLang.translate("gui.power_meter.tooltip.reset").component());
         resetButton.withCallback(() -> sendPacket(Option.RESET));
+
+        if (!menu.contentHolder.isOwner(menu.player)) return;
 
         unlockButton = new IconButton(x + 96, y + 139, ModGuiTexture.POWER_METER_UNLOCKED);
         unlockButton.green = menu.contentHolder.unlocked;
@@ -86,7 +89,7 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
             sendPacket(Option.LOCK);
         });
 
-        addRenderableWidgets(confirmButton, resetButton, unlockButton, lockButton);
+        addRenderableWidgets(resetButton, unlockButton, lockButton);
     }
 
     private void sendPacket(Option option) {

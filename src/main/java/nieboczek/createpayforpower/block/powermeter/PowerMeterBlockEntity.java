@@ -17,6 +17,8 @@ import nieboczek.createpayforpower.CPFPLang;
 import nieboczek.createpayforpower.CreatePayForPower;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuProvider {
     // TODO: Like the Network Stress Limiter we will have to create a separate kinetic network, kinda fucked.
 
@@ -31,6 +33,7 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
     public float sus = 0;  // I fucking promise this means "stress unit seconds" like "Ws" being "Watt seconds"
     public long ksuh = 0;  // kilo stress unit hours
     int ticksPassed = 0;
+    public UUID owner;
 
     public PowerMeterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -49,14 +52,19 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
             compound.put("Inventory", inventory.serializeNBT(registries));
         }
 
-        compound.put("hourMeasurement", ByteTag.valueOf(hourMeasurement));
-        compound.put("itemMode", ByteTag.valueOf(itemMode));
-        compound.put("unlocked", ByteTag.valueOf(unlocked));
-        compound.put("ticksPassed", IntTag.valueOf(ticksPassed));
-        compound.put("increaseBy", IntTag.valueOf(increaseBy));
-        compound.put("thingsLeft", IntTag.valueOf(thingsLeft));
-        compound.put("ksuh", LongTag.valueOf(ksuh));
-        compound.put("sus", FloatTag.valueOf(sus));
+        compound.putBoolean("hourMeasurement", hourMeasurement);
+        compound.putBoolean("itemMode", itemMode);
+        compound.putBoolean("unlocked", unlocked);
+        compound.putInt("hoursUsed", hoursUsed);
+        compound.putInt("increaseBy", increaseBy);
+        compound.putInt("thingsLeft", thingsLeft);
+        compound.putFloat("sus", sus);
+        compound.putLong("ksuh", ksuh);
+        compound.putInt("ticksPassed", ticksPassed);
+
+        if (owner != null)
+            compound.putUUID("owner", owner);
+
         super.write(compound, registries, clientPacket);
     }
 
@@ -69,11 +77,16 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
         hourMeasurement = compound.getBoolean("hourMeasurement");
         itemMode = compound.getBoolean("itemMode");
         unlocked = compound.getBoolean("unlocked");
-        ticksPassed = compound.getInt("ticksPassed");
+        hoursUsed = compound.getInt("hoursUsed");
         increaseBy = compound.getInt("increaseBy");
         thingsLeft = compound.getInt("thingsLeft");
-        ksuh = compound.getLong("ksuh");
         sus = compound.getFloat("sus");
+        ksuh = compound.getLong("ksuh");
+        ticksPassed = compound.getInt("ticksPassed");
+
+        if (compound.hasUUID("owner"))
+            owner = compound.getUUID("owner");
+
         super.read(compound, registries, clientPacket);
     }
 
@@ -112,6 +125,14 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
                 }
             }
         }
+    }
+
+    public boolean canOpen(Player player) {
+        return unlocked || isOwner(player);
+    }
+
+    public boolean isOwner(Player player) {
+        return owner.equals(player.getUUID());
     }
 
     public void checkStatus() {
