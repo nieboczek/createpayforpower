@@ -38,7 +38,7 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
                 .forOptions(CPFPLang.translatedOptions("gui.power_meter.mode", "item", "redstone"))
                 .calling(i -> sendPacket(i == 0 ? Option.ENABLE_ITEM_MODE : Option.DISABLE_ITEM_MODE))
                 .setState(menu.contentHolder.itemMode ? 0 : 1)
-                .titled(CPFPLang.translate("gui.power_meter.mode").component());
+                .titled(CPFPLang.gui("power_meter.mode").component());
 
         // Add VALUE time/ksuh
         ScrollInput value = new ScrollInput(x + 46, y + 58, 62, 20)
@@ -49,14 +49,14 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
                 .withRange(1, 10_001)
                 .withShiftStep(10)
                 .setState(menu.contentHolder.increaseBy)
-                .titled(CPFPLang.translate("gui.power_meter.amount").component());
+                .titled(CPFPLang.gui("power_meter.amount").component());
 
         // Add value TIME/KSUH
         ScrollInput measurement = new SelectionScrollInput(x + 108, y + 58, 54, 20)
                 .forOptions(CPFPLang.translatedOptions("gui.power_meter.measurement", "hour", "ksuh"))
                 .calling(i -> sendPacket(i == 0 ? Option.ENABLE_HOUR_MEASUREMENT : Option.DISABLE_HOUR_MEASUREMENT))
                 .setState(menu.contentHolder.hourMeasurement ? 0 : 1)
-                .titled(CPFPLang.translate("gui.power_meter.measurement").component());
+                .titled(CPFPLang.gui("power_meter.measurement").component());
 
         addRenderableWidgets(mode, value, measurement);
 
@@ -66,14 +66,14 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         addRenderableWidget(confirmButton);
 
         IconButton resetButton = new IconButton(x + 120, y + 139, AllIcons.I_CONFIG_RESET);
-        resetButton.setToolTip(CPFPLang.translate("gui.power_meter.tooltip.reset").component());
+        resetButton.setToolTip(CPFPLang.gui("power_meter.tooltip.reset").component());
         resetButton.withCallback(() -> sendPacket(Option.RESET));
 
         if (!menu.contentHolder.isOwner(menu.player)) return;
 
         unlockButton = new IconButton(x + 96, y + 139, ModGuiTexture.POWER_METER_UNLOCKED);
         unlockButton.green = menu.contentHolder.unlocked;
-        unlockButton.setToolTip(CPFPLang.translate("gui.power_meter.tooltip.unlock").component());
+        unlockButton.setToolTip(CPFPLang.gui("power_meter.tooltip.unlock").component());
         unlockButton.withCallback(() -> {
             lockButton.green = false;
             unlockButton.green = true;
@@ -82,7 +82,7 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
 
         lockButton = new IconButton(x + 78, y + 139, ModGuiTexture.POWER_METER_LOCKED);
         lockButton.green = !menu.contentHolder.unlocked;
-        lockButton.setToolTip(CPFPLang.translate("gui.power_meter.tooltip.lock").component());
+        lockButton.setToolTip(CPFPLang.gui("power_meter.tooltip.lock").component());
         lockButton.withCallback(() -> {
             unlockButton.green = false;
             lockButton.green = true;
@@ -115,7 +115,7 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         graphics.drawString(font, title, x + (BG.getWidth() - 8 - font.width(title)) / 2, y + 4, 0x592424, false);
 
         // Mode
-        Component modePrefix = CPFPLang.translate("gui.power_meter.mode.colon").component();
+        Component modePrefix = CPFPLang.gui("power_meter.mode.colon").component();
         graphics.drawString(font, modePrefix, x + 38, y + 28, 0xffffff);
 
         // Redstone/Item
@@ -130,7 +130,7 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         graphics.drawString(font, action, x + 9, y + 48, 0xffffff);
 
         // Add X Y
-        Component add = CPFPLang.translate("gui.power_meter.add").component();
+        Component add = CPFPLang.gui("power_meter.add").component();
         graphics.drawString(font, add, x + 16, y + 64, 0xffffff);
         graphics.drawString(font, Integer.toString(entity.increaseBy), x + 53, y + 64, 0xffffff);
 
@@ -151,7 +151,7 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         graphics.drawString(font, leftValue, x + 92, y + 90, 0xffffff);
 
         // Total Used:
-        Component totalUsed = CPFPLang.translate("gui.power_meter.total_used").component();
+        Component totalUsed = CPFPLang.gui("power_meter.total_used").component();
         graphics.drawString(font, totalUsed, x + 16, y + 112, 0xffffff);
 
         String totalUsedValue;

@@ -18,19 +18,18 @@ public class ModBlocks {
                     .initialProperties(SharedProperties::softMetal)
                     .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
                     .simpleItem()
-//                    .item()
-//                    .transform(customItemModel())
                     .register();
 
-    public static final BlockEntry<NetworkStressLimiterBlock> NETWORK_STRESS_LIMITER =
-            CreatePayForPower.REGISTRATE.block("network_stress_limiter", NetworkStressLimiterBlock::new)
-                    .initialProperties(SharedProperties::softMetal)
-                    .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
-                    .simpleItem()
-//                    .item()
-//                    .transform(customItemModel())
-                    .register();
+    // TODO: for now this seems kinda impossible to do in one block. two blocks may be possible, but one would be way more convenient.
+    // Actually it might be still possible with Inject-INVOKE mixins but that's literally hell.
+    // Other useful mixin types: Redirect-FIELD
+    // How to implement / More mixin types: https://wiki.fabricmc.net/tutorial:mixin_examples
+//    public static final BlockEntry<NetworkStressLimiterBlock> NETWORK_STRESS_LIMITER =
+//            CreatePayForPower.REGISTRATE.block("network_stress_limiter", NetworkStressLimiterBlock::new)
+//                    .initialProperties(SharedProperties::softMetal)
+//                    .tag(AllTags.AllBlockTags.SAFE_NBT.tag)
+//                    .simpleItem()
+//                    .register();
 
-//    public static final Block NETWORK_STRESS_LIMITER = null;
     public static void register() {}
 }

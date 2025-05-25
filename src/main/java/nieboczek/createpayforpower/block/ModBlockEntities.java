@@ -19,12 +19,13 @@ public class ModBlockEntities {
             .renderer(() -> PowerMeterRenderer::new)
             .register();
 
-    public static final BlockEntityEntry<NetworkStressLimiterBlockEntity> NETWORK_STRESS_LIMITER = CreatePayForPower.REGISTRATE
-            .blockEntity("network_stress_limiter", NetworkStressLimiterBlockEntity::new)
-            .visual(() -> OrientedRotatingVisual.of(AllPartialModels.SHAFT), false)
-            .validBlocks(ModBlocks.NETWORK_STRESS_LIMITER)
-            .renderer(() -> NetworkStressLimiterRenderer::new)
-            .register();
+    // see ModBlocks
+//    public static final BlockEntityEntry<NetworkStressLimiterBlockEntity> NETWORK_STRESS_LIMITER = CreatePayForPower.REGISTRATE
+//            .blockEntity("network_stress_limiter", NetworkStressLimiterBlockEntity::new)
+//            .visual(() -> OrientedRotatingVisual.of(AllPartialModels.SHAFT), false)
+//            .validBlocks(ModBlocks.NETWORK_STRESS_LIMITER)
+//            .renderer(() -> NetworkStressLimiterRenderer::new)
+//            .register();
 
     public static void register() {}
 }

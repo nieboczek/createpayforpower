@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 import java.util.Map;
 
-@Deprecated(since = "It's here because I tried to do stuff with TorquePropagator.networks, might still be useful so I'm leaving it here.")
+//@Deprecated(since = "It's here because I tried to do stuff with TorquePropagator.networks, might still be useful so I'm leaving it here.")
 @Mixin(TorquePropagator.class)
 public interface TorquePropagatorMixin {
     @Accessor

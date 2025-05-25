@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "KineticNetworkMixin",
-    "TorquePropagatorMixin"
+    "TorquePropagatorMixin",
+    "GaugeShaperMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -21,13 +21,12 @@ public class NetworkStressLimiterBlock extends DirectionalKineticBlock implement
 
     @Override
     public BlockEntityType<? extends NetworkStressLimiterBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.NETWORK_STRESS_LIMITER.get();
+        return null;//ModBlockEntities.NETWORK_STRESS_LIMITER.get();
     }
 
     @Override
     public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
-        NetworkStressLimiterBlockEntity entity = getBlockEntity(level, pos);
-        entity.updateOutput();
+        withBlockEntityDo(level, pos, NetworkStressLimiterBlockEntity::updateOutput);
     }
 
     @Override
