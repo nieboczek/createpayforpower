@@ -1,7 +1,10 @@
 package nieboczek.createpayforpower.block.powermeter;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import com.simibubi.create.content.kinetics.simpleRelays.SimpleKineticBlockEntity;
+import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
@@ -19,18 +22,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuProvider {
-    // TODO: Like the Network Stress Limiter we will have to create a separate kinetic network, kinda fucked.
-
+public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements MenuProvider {
     // Note to self: 1 ksuh = 1000su for 1 hour
     public ItemStackHandler inventory;
     public boolean hourMeasurement = true;
     public boolean itemMode = true;
     public boolean unlocked = true;
     public int hoursUsed = 0;
-    public int increaseBy = 1;  // increase `thingsLeft` on item get / receive redstone
-    public int thingsLeft = 0;  // ksuh/hours left
-    public float sus = 0;  // I fucking promise this means "stress unit seconds" like "Ws" being "Watt seconds"
+    public int increaseBy = 1;
+    public int unitsLeft = 0;
+    public float sut = 0;  // stress unit ticks
     public long ksuh = 0;  // kilo stress unit hours
     int ticksPassed = 0;
     public UUID owner;
@@ -57,8 +58,8 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
         compound.putBoolean("unlocked", unlocked);
         compound.putInt("hoursUsed", hoursUsed);
         compound.putInt("increaseBy", increaseBy);
-        compound.putInt("thingsLeft", thingsLeft);
-        compound.putFloat("sus", sus);
+        compound.putInt("unitsLeft", unitsLeft);
+        compound.putFloat("sut", sut);
         compound.putLong("ksuh", ksuh);
         compound.putInt("ticksPassed", ticksPassed);
 
@@ -79,8 +80,8 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
         unlocked = compound.getBoolean("unlocked");
         hoursUsed = compound.getInt("hoursUsed");
         increaseBy = compound.getInt("increaseBy");
-        thingsLeft = compound.getInt("thingsLeft");
-        sus = compound.getFloat("sus");
+        unitsLeft = compound.getInt("unitsLeft");
+        sut = compound.getFloat("sut");
         ksuh = compound.getLong("ksuh");
         ticksPassed = compound.getInt("ticksPassed");
 
@@ -93,9 +94,10 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
     @Override
     public void tick() {
         if (isVirtual()) return;
-        if (thingsLeft <= 0) return;
+        if (unitsLeft <= 0) return;
 
         ticksPassed++;
+        sut += stress;
 
         // 72_000 being 20 ticks * 60 seconds * 60 minutes (AKA an hour)
         if (ticksPassed >= 72_200) {
@@ -103,26 +105,19 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
             hoursUsed++;
 
             if (hourMeasurement) {
-                thingsLeft -= 1;
-                checkStatus();
+                unitsLeft -= 1;
+                checkUnits();
             }
         }
 
-        // 20 ticks being a second
-        if (ticksPassed % 20 == 0) {
-            // There is 1 imposter among us...
-            // Go place your comment about this situation above this one.
-            sus += stress;
+        // 72_000_000 being 1000su/t * 20 ticks * 60 seconds * 60 minutes (AKA ksuh)
+        if (sut >= 72_000_000) {
+            sut -= 72_000_000;
+            ksuh++;
 
-            // 3_600_000 being 1000su * 60 minutes * 60 seconds (AKA ksuh)
-            if (sus >= 3_600_000) {
-                sus -= 3_600_000;
-                ksuh++;
-
-                if (!hourMeasurement) {
-                    thingsLeft -= 1;
-                    checkStatus();
-                }
+            if (!hourMeasurement) {
+                unitsLeft -= 1;
+                checkUnits();
             }
         }
     }
@@ -135,24 +130,35 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
         return owner.equals(player.getUUID());
     }
 
-    public void checkStatus() {
-        if (thingsLeft <= 0) {
-            CreatePayForPower.LOGGER.warn("PowerMeter has ran out of things!");
+    public void increaseUnits() {
+        unitsLeft += increaseBy;
+    }
+
+    public void checkUnits() {
+        if (unitsLeft <= 0) {
+            CreatePayForPower.LOGGER.warn("PowerMeter has ran out of units!");
             ticksPassed = 0;
         }
     }
 
-    public void increaseThings() {
-        thingsLeft += increaseBy;
+    public String getTimeLeft() {
+        if (hourMeasurement)
+            return getTimeLeftFromTicks((unitsLeft * 72_000L - ticksPassed));
+
+        // don't divide by zero
+        if (stress == 0) return "∞";
+
+        float totalSutLeft = (unitsLeft * 72_000_000L) - sut;
+        long ticksLeft = (long)(totalSutLeft / stress);
+        return getTimeLeftFromTicks(ticksLeft);
     }
 
-    public String getTimeLeft() {
-        int totalTicksLeft = (int)(thingsLeft * 72000L - ticksPassed);
-        if (totalTicksLeft <= 0) return "0s";
+    private String getTimeLeftFromTicks(long ticksLeft) {
+        if (ticksLeft <= 0) return "0s";
 
-        int hours = totalTicksLeft / 72000;
-        int minutes = (totalTicksLeft % 72000) / 1200;
-        int seconds = (totalTicksLeft % 1200) / 20;
+        long hours = ticksLeft / 72_000;
+        long minutes = (ticksLeft % 72_000) / 1200;
+        long seconds = (ticksLeft % 1200) / 20;
 
         if (hours > 0) {
             return hours + "h " + minutes + "min";
@@ -161,6 +167,15 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
         } else {
             return seconds + "s";
         }
+    }
+
+    @Override
+    public float getRotationSpeedModifier(Direction face) {
+        if (hasSource()) {
+            if (face != getSourceFacing() && unitsLeft > 0)
+                return 1;
+        }
+        return 0;
     }
 
     public Item getItemFilter() {

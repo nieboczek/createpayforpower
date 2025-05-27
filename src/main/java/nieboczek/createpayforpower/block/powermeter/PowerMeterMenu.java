@@ -43,8 +43,7 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
     @Override
     protected void addSlots() {
         addSlot(new SlotItemHandler(contentHolder.inventory, 0, 11, 24));
-
-        addPlayerSlots(37, 161);
+        addPlayerSlots(11, 183);
     }
 
     @Override

@@ -2,15 +2,14 @@ package nieboczek.createpayforpower.block.powermeter;
 
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
-import com.simibubi.create.content.kinetics.gauge.GaugeBlock;
-import com.simibubi.create.content.kinetics.gauge.GaugeBlockEntity;
 import com.simibubi.create.content.kinetics.gauge.GaugeShaper;
-import com.simibubi.create.content.kinetics.gauge.StressGaugeBlockEntity;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.levelWrappers.WrappedLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -23,6 +22,9 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -34,8 +36,27 @@ import nieboczek.createpayforpower.mixin.GaugeShaperMixin;
 public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<PowerMeterBlockEntity> {
     public static final GaugeShaper SHAPER = GaugeShaperMixin.callMake();
 
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+
     public PowerMeterBlock(Properties properties) {
         super(properties);
+        registerDefaultState(defaultBlockState().setValue(POWERED, false));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder.add(POWERED));
+    }
+
+    @Override
+    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        boolean previouslyPowered = state.getValue(POWERED);
+        if (previouslyPowered != level.hasNeighborSignal(pos)) {
+            level.setBlock(pos, state.cycle(POWERED), 2);
+            if (previouslyPowered) return;
+
+            withBlockEntityDo(level, pos, PowerMeterBlockEntity::increaseUnits);
+        }
     }
 
     @Override
@@ -64,7 +85,7 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
             if (entity.itemMode) {
                 if (stack.is(entity.getItemFilter())) {
                     stack.consume(1, null);
-                    entity.increaseThings();
+                    entity.increaseUnits();
                     player.swing(hand);  // Create doesn't use this at all on the depot, but it still works?
                     return ItemInteractionResult.SUCCESS;
                 }

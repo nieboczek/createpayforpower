@@ -64,12 +64,11 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         confirmButton.withCallback(() -> minecraft.player.closeContainer());
 
         addRenderableWidget(confirmButton);
+        if (!menu.contentHolder.isOwner(menu.player)) return;
 
         IconButton resetButton = new IconButton(x + 120, y + 139, AllIcons.I_CONFIG_RESET);
         resetButton.setToolTip(CPFPLang.gui("power_meter.tooltip.reset").component());
         resetButton.withCallback(() -> sendPacket(Option.RESET));
-
-        if (!menu.contentHolder.isOwner(menu.player)) return;
 
         unlockButton = new IconButton(x + 96, y + 139, ModGuiTexture.POWER_METER_UNLOCKED);
         unlockButton.green = menu.contentHolder.unlocked;
@@ -146,7 +145,7 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         if (entity.hourMeasurement)
             leftValue = entity.getTimeLeft();
         else
-            leftValue = entity.thingsLeft + " ksuh";
+            leftValue = entity.unitsLeft + " ksuh";
 
         graphics.drawString(font, leftValue, x + 92, y + 90, 0xffffff);
 

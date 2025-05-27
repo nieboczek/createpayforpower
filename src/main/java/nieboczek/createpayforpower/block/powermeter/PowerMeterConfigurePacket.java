@@ -25,8 +25,8 @@ public record PowerMeterConfigurePacket(Option option, int increaseBy) implement
             case LOCK -> menu.contentHolder.unlocked = false;
             case UNLOCK -> menu.contentHolder.unlocked = true;
             case RESET -> {
-                menu.contentHolder.thingsLeft = 0;
-                menu.contentHolder.checkStatus();
+                menu.contentHolder.unitsLeft = 0;
+                menu.contentHolder.checkUnits();
             }
         }
     }

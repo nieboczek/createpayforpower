@@ -20,15 +20,11 @@ public class PowerMeterStatusDisplaySource extends SingleLineDisplaySource {
         int mode = context.sourceConfig().getInt("Mode");
 
         return Component.literal(switch (mode) {
-            case 0 -> {
-                if (!entity.hourMeasurement)
-                    yield "USING KSUH MODE";
-                yield entity.getTimeLeft();
-            }
+            case 0 -> entity.getTimeLeft();
             case 1 -> {
                 if (entity.hourMeasurement)
                     yield "USING TIME MODE";
-                yield entity.thingsLeft + " ksuh";
+                yield entity.unitsLeft + " ksuh";
             }
             case 2 -> entity.ksuh + " ksuh";
             case 3 -> entity.hoursUsed + " h";
