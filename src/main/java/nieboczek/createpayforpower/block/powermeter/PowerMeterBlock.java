@@ -3,6 +3,7 @@ package nieboczek.createpayforpower.block.powermeter;
 import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
+import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.gauge.GaugeShaper;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.levelWrappers.WrappedLevel;
@@ -51,8 +52,10 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
 
     @Override
     protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        // TODO: actually do this correctly
         boolean previouslyPowered = state.getValue(POWERED);
         if (previouslyPowered != level.hasNeighborSignal(pos)) {
+            CreatePayForPower.LOGGER.info("Different signal!!!");
             level.setBlock(pos, state.cycle(POWERED), 2);
             if (previouslyPowered) return;
 
@@ -88,6 +91,7 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
         return onBlockEntityUseItemOn(level, pos, entity -> {
             if (entity.itemMode) {
                 if (stack.is(entity.getItemFilter())) {
+                    // TODO: Put the item onto the block entity like the stock ticker
                     stack.consume(1, null);
                     entity.increaseUnits();
                     player.swing(hand);  // Create doesn't use this at all on the depot, but it still works?
@@ -170,19 +174,19 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
                 .getAxis() != Direction.Axis.X;
     }
 
-    public boolean shouldRenderHeadOnFace(Level world, BlockPos pos, BlockState state, Direction face) {
-        if (face.getAxis()
-                .isVertical())
-            return false;
-        if (face == state.getValue(FACING)
-                .getOpposite())
-            return false;
-        if (face.getAxis() == getRotationAxis(state))
-            return false;
-        if (getRotationAxis(state) == Direction.Axis.Y && face != state.getValue(FACING))
-            return false;
-        if (!Block.shouldRenderFace(state, world, pos, face, pos.relative(face)) && !(world instanceof WrappedLevel))
-            return false;
-        return true;
-    }
+//    public boolean shouldRenderHeadOnFace(Level world, BlockPos pos, BlockState state, Direction face) {
+//        if (face.getAxis()
+//                .isVertical())
+//            return false;
+//        if (face == state.getValue(FACING)
+//                .getOpposite())
+//            return false;
+//        if (face.getAxis() == getRotationAxis(state))
+//            return false;
+//        if (getRotationAxis(state) == Direction.Axis.Y && face != state.getValue(FACING))
+//            return false;
+//        if (!Block.shouldRenderFace(state, world, pos, face, pos.relative(face)) && !(world instanceof WrappedLevel))
+//            return false;
+//        return true;
+//    }
 }

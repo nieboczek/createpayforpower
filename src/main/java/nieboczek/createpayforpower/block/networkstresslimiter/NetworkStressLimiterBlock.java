@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import nieboczek.createpayforpower.block.ModBlockEntities;
 
 public class NetworkStressLimiterBlock extends DirectionalKineticBlock implements IBE<NetworkStressLimiterBlockEntity> {
     public NetworkStressLimiterBlock(Properties properties) {

@@ -88,6 +88,7 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
 
     @Override
     public ItemStack quickMoveStack(Player playerIn, int index) {
+        // TODO: This always(?) puts the item in the top-left slot as the filter, unless the filter slot is the one quick moving from.
         if (index < 36) {
             ItemStack stackToInsert = playerInventory.getItem(index);
             for (int i = 0; i < contentHolder.inventory.getSlots(); i++) {

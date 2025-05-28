@@ -1,6 +1,5 @@
 package nieboczek.createpayforpower.block;
 
-import static com.simibubi.create.foundation.data.ModelGen.customItemModel;
 import com.simibubi.create.AllTags;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;

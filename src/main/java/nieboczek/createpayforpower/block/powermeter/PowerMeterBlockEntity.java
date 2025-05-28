@@ -1,6 +1,6 @@
 package nieboczek.createpayforpower.block.powermeter;
 
-import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
+import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -15,13 +15,13 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import nieboczek.createpayforpower.CPFPLang;
-import nieboczek.createpayforpower.CreatePayForPower;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuProvider {
+public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements MenuProvider {
+    // TODO: If input speed changed, this gives up on blocking when unitsLeft == 0
     // Note to self: 1 ksuh = 1000su for 1 hour
     public ItemStackHandler inventory;
     public boolean hourMeasurement = true;
@@ -32,8 +32,10 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
     public int unitsLeft = 0;
     public float sut = 0;  // stress unit ticks
     public long ksuh = 0;  // kilo stress unit hours
-    int ticksPassed = 0;
     public UUID owner;
+
+    private short detachCounter = 2;  // I care the least if this overflows
+    private int ticksPassed = 0;
 
     public PowerMeterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -44,6 +46,23 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
                 setChanged();
             }
         };
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        // This works for newly placed ones, not for the ones already placed.
+        if (unitsLeft <= 0)
+            detachKinetics();
+    }
+
+    @Override
+    public void lazyTick() {
+        // detachKinetics doesn't work in the initialize method for already placed ones for some fucking reason.
+        detachCounter--;
+        if (detachCounter == 0 && unitsLeft <= 0) {
+            detachKinetics();
+        }
     }
 
     @Override
@@ -97,7 +116,7 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
         if (unitsLeft <= 0) return;
 
         ticksPassed++;
-        sut += stress;
+        sut += overStressed ? 0 : stress;
 
         // 72_000 being 20 ticks * 60 seconds * 60 minutes (AKA an hour)
         if (ticksPassed >= 72_200) {
@@ -136,12 +155,13 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
 
     public void increaseUnits() {
         unitsLeft += increaseBy;
+        attachKinetics();
     }
 
     public void checkUnits() {
         if (unitsLeft <= 0) {
-            CreatePayForPower.LOGGER.warn("PowerMeter has ran out of units!");
             ticksPassed = 0;
+            detachKinetics();
         }
     }
 
@@ -173,17 +193,10 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
         }
     }
 
-//    @Override
-//    public float propagateRotationTo(KineticBlockEntity target, BlockState stateFrom, BlockState stateTo, BlockPos diff, boolean connectedViaAxes, boolean connectedViaCogs) {
-//        boolean equals = diff.equals(getBlockPos().relative(stateFrom.getValue(PowerMeterBlock.FACING)));
-//        CreatePayForPower.LOGGER.info("Relative pos: {}", getBlockPos().relative(stateFrom.getValue(PowerMeterBlock.FACING)));
-//        CreatePayForPower.LOGGER.info("Can propagate to diff? {}", equals);
-//        if (equals) {
-//            if (hasSource() && unitsLeft > 0)
-//                return 1;
-//        }
-//        return 0;
-//    }
+    @Override
+    public float getRotationSpeedModifier(Direction face) {
+        return 1;
+    }
 
     @Override
     public @NotNull Component getDisplayName() {
