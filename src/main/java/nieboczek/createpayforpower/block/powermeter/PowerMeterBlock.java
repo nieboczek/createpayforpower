@@ -1,5 +1,6 @@
 package nieboczek.createpayforpower.block.powermeter;
 
+import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.gauge.GaugeShaper;
@@ -55,7 +56,10 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
             level.setBlock(pos, state.cycle(POWERED), 2);
             if (previouslyPowered) return;
 
-            withBlockEntityDo(level, pos, PowerMeterBlockEntity::increaseUnits);
+            withBlockEntityDo(level, pos, entity -> {
+                if (!entity.itemMode)
+                    entity.increaseUnits();
+            });
         }
     }
 
@@ -95,11 +99,6 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
     }
 
     @Override
-    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
-        IBE.onRemove(state, level, pos, newState);
-    }
-
-    @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
         if (placer instanceof ServerPlayer) {
@@ -111,12 +110,30 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
     }
 
     @Override
+    public Class<PowerMeterBlockEntity> getBlockEntityClass() {
+        return PowerMeterBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends PowerMeterBlockEntity> getBlockEntityType() {
+        return ModBlockEntities.POWER_METER.get();
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return SHAPER.get(state.getValue(FACING), state.getValue(AXIS_ALONG_FIRST_COORDINATE));
+    }
+
+    @Override
+    protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
+        return false;
+    }
+
+    @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
         Level world = context.getLevel();
         Direction face = context.getClickedFace();
-        BlockPos placedOnPos = context.getClickedPos()
-                .relative(context.getClickedFace()
-                        .getOpposite());
+        BlockPos placedOnPos = context.getClickedPos().relative(context.getClickedFace().getOpposite());
         BlockState placedOnState = world.getBlockState(placedOnPos);
         Block block = placedOnState.getBlock();
 
@@ -151,26 +168,6 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
     protected boolean getAxisAlignmentForPlacement(BlockPlaceContext context) {
         return context.getHorizontalDirection()
                 .getAxis() != Direction.Axis.X;
-    }
-
-    @Override
-    public Class<PowerMeterBlockEntity> getBlockEntityClass() {
-        return PowerMeterBlockEntity.class;
-    }
-
-    @Override
-    public BlockEntityType<? extends PowerMeterBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.POWER_METER.get();
-    }
-
-    @Override
-    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPER.get(state.getValue(FACING), state.getValue(AXIS_ALONG_FIRST_COORDINATE));
-    }
-
-    @Override
-    protected boolean isPathfindable(BlockState state, PathComputationType pathComputationType) {
-        return false;
     }
 
     public boolean shouldRenderHeadOnFace(Level world, BlockPos pos, BlockState state, Direction face) {

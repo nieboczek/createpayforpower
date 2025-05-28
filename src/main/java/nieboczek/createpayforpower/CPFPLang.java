@@ -33,7 +33,7 @@ public class CPFPLang extends Lang {
         return translate("gui." + key);
     }
 
-    public static LangBuilder block(String identifier) {
-        return builder().add(Component.translatable("block.createpayforpower." + identifier));
+    public static LangBuilder block(String key) {
+        return builder().add(Component.translatable("block.createpayforpower." + key));
     }
 }

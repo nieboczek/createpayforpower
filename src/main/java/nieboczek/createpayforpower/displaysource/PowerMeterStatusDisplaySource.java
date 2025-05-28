@@ -23,7 +23,7 @@ public class PowerMeterStatusDisplaySource extends SingleLineDisplaySource {
             case 0 -> entity.getTimeLeft();
             case 1 -> {
                 if (entity.hourMeasurement)
-                    yield "USING TIME MODE";
+                    yield "∞";
                 yield entity.unitsLeft + " ksuh";
             }
             case 2 -> entity.ksuh + " ksuh";

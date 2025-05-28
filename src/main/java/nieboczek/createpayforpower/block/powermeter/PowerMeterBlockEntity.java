@@ -1,8 +1,6 @@
 package nieboczek.createpayforpower.block.powermeter;
 
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
-import com.simibubi.create.content.kinetics.simpleRelays.SimpleKineticBlockEntity;
-import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -18,11 +16,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import nieboczek.createpayforpower.CPFPLang;
 import nieboczek.createpayforpower.CreatePayForPower;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
-public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements MenuProvider {
+public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuProvider {
     // Note to self: 1 ksuh = 1000su for 1 hour
     public ItemStackHandler inventory;
     public boolean hourMeasurement = true;
@@ -130,6 +129,10 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         return owner.equals(player.getUUID());
     }
 
+    public Item getItemFilter() {
+        return inventory.getStackInSlot(0).getItem();
+    }
+
     public void increaseUnits() {
         unitsLeft += increaseBy;
     }
@@ -169,21 +172,20 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         }
     }
 
-    @Override
-    public float getRotationSpeedModifier(Direction face) {
-        if (hasSource()) {
-            if (face != getSourceFacing() && unitsLeft > 0)
-                return 1;
-        }
-        return 0;
-    }
+//    @Override
+//    public float propagateRotationTo(KineticBlockEntity target, BlockState stateFrom, BlockState stateTo, BlockPos diff, boolean connectedViaAxes, boolean connectedViaCogs) {
+//        boolean equals = diff.equals(getBlockPos().relative(stateFrom.getValue(PowerMeterBlock.FACING)));
+//        CreatePayForPower.LOGGER.info("Relative pos: {}", getBlockPos().relative(stateFrom.getValue(PowerMeterBlock.FACING)));
+//        CreatePayForPower.LOGGER.info("Can propagate to diff? {}", equals);
+//        if (equals) {
+//            if (hasSource() && unitsLeft > 0)
+//                return 1;
+//        }
+//        return 0;
+//    }
 
-    public Item getItemFilter() {
-        return inventory.getStackInSlot(0).getItem();
-    }
-
     @Override
-    public Component getDisplayName() {
+    public @NotNull Component getDisplayName() {
         return CPFPLang.block("power_meter").component();
     }
 
