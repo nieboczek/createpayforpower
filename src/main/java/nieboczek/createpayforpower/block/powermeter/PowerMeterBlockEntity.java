@@ -92,6 +92,7 @@ public class PowerMeterBlockEntity extends KineticBlockEntity implements MenuPro
 
     @Override
     public void tick() {
+        super.tick();
         if (isVirtual()) return;
         if (unitsLeft <= 0) return;
 
