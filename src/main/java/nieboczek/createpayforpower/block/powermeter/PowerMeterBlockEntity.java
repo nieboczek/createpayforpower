@@ -21,7 +21,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements MenuProvider {
-    // TODO: If input speed changed, this gives up on blocking when unitsLeft == 0
+    // TODO: when holding a shaft and trying to place one in a compatible position, don't open the UI
+    // TODO: visuals don't update properly when time/ksuh ran out
     // Note to self: 1 ksuh = 1000su for 1 hour
     public ItemStackHandler inventory;
     public boolean hourMeasurement = true;
@@ -34,7 +35,6 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
     public long ksuh = 0;  // kilo stress unit hours
     public UUID owner;
 
-    private short detachCounter = 2;  // I care the least if this overflows
     private int ticksPassed = 0;
 
     public PowerMeterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
@@ -46,23 +46,6 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
                 setChanged();
             }
         };
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-        // This works for newly placed ones, not for the ones already placed.
-        if (unitsLeft <= 0)
-            detachKinetics();
-    }
-
-    @Override
-    public void lazyTick() {
-        // detachKinetics doesn't work in the initialize method for already placed ones for some fucking reason.
-        detachCounter--;
-        if (detachCounter == 0 && unitsLeft <= 0) {
-            detachKinetics();
-        }
     }
 
     @Override
@@ -195,7 +178,9 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
 
     @Override
     public float getRotationSpeedModifier(Direction face) {
-        return 1;
+        if (hasSource() && (face == getSourceFacing() || unitsLeft > 0))
+            return 1;
+        return 0;
     }
 
     @Override
