@@ -21,7 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements MenuProvider {
-    // TODO: visuals don't update properly when time/ksuh ran out
     // Note to self: 1 ksuh = 1000su for 1 hour
     public ItemStackHandler inventory;
     public boolean hourMeasurement = true;
@@ -137,12 +136,16 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
 
     public void increaseUnits() {
         unitsLeft += increaseBy;
+        setChanged();
+        level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2 | 16);  // Update visuals
         attachKinetics();
     }
 
     public void checkUnits() {
         if (unitsLeft <= 0) {
             ticksPassed = 0;
+            setChanged();
+            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2 | 16);  // Update visuals
             detachKinetics();
         }
     }
@@ -151,9 +154,7 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         if (hourMeasurement)
             return getTimeLeftFromTicks((unitsLeft * 72_000L - ticksPassed));
 
-        // don't divide by zero
         if (stress == 0) return "∞";
-
         float totalSutLeft = (unitsLeft * 72_000_000L) - sut;
         long ticksLeft = (long)(totalSutLeft / stress);
         return getTimeLeftFromTicks(ticksLeft);

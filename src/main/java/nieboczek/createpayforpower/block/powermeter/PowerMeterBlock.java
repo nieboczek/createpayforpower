@@ -96,7 +96,7 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
                     // TODO: Put the item onto the block entity like the stock ticker
                     stack.consume(1, null);
                     entity.increaseUnits();
-                    player.swing(hand);  // Create doesn't use this at all on the depot, but it still works?
+                    player.swing(hand);  // Create doesn't use this at all on the depot, but it still swings the hand?
                     return ItemInteractionResult.SUCCESS;
                 }
             }
@@ -107,12 +107,8 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        if (placer instanceof ServerPlayer) {
-            withBlockEntityDo(level, pos, entity -> {
-                CreatePayForPower.LOGGER.info("Set owner of power meter to {}", placer.getName());
-                entity.owner = placer.getUUID();
-            });
-        }
+        if (placer instanceof ServerPlayer)
+            withBlockEntityDo(level, pos, entity -> entity.owner = placer.getUUID());
     }
 
     @Override
