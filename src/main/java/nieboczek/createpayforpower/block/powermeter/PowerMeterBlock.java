@@ -1,21 +1,15 @@
 package nieboczek.createpayforpower.block.powermeter;
 
 import com.simibubi.create.AllItems;
-import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
-import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.gauge.GaugeShaper;
 import com.simibubi.create.foundation.block.IBE;
-import net.createmod.catnip.levelWrappers.WrappedLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -34,7 +28,6 @@ import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import nieboczek.createpayforpower.CreatePayForPower;
 import nieboczek.createpayforpower.block.ModBlockEntities;
 import nieboczek.createpayforpower.mixin.GaugeShaperMixin;
 
@@ -54,11 +47,11 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
     }
 
     @Override
-    protected void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
-        // TODO: actually do this correctly
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean isMoving) {
+        if (level.isClientSide) return;
+
         boolean previouslyPowered = state.getValue(POWERED);
         if (previouslyPowered != level.hasNeighborSignal(pos)) {
-            CreatePayForPower.LOGGER.info("Different signal!!!");
             level.setBlock(pos, state.cycle(POWERED), 2);
             if (previouslyPowered) return;
 
@@ -81,26 +74,19 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
         if (level.isClientSide)
             return ItemInteractionResult.SUCCESS;
 
-        if (stack.isEmpty())
-            return onBlockEntityUseItemOn(level, pos, entity -> {
+        return onBlockEntityUseItemOn(level, pos, entity -> {
+            if (entity.itemMode && stack.is(entity.getItemFilter())) {
+                // TODO: Put the item onto the block entity like the stock ticker
+                stack.consume(1, null);
+                entity.increaseUnits();
+                player.swing(hand);
+            } else {
                 if (!entity.canOpen(player))
                     return ItemInteractionResult.SUCCESS;
 
                 player.openMenu(entity, entity::sendToMenu);
-                return ItemInteractionResult.SUCCESS;
-            });
-
-        return onBlockEntityUseItemOn(level, pos, entity -> {
-            if (entity.itemMode) {
-                if (stack.is(entity.getItemFilter())) {
-                    // TODO: Put the item onto the block entity like the stock ticker
-                    stack.consume(1, null);
-                    entity.increaseUnits();
-                    player.swing(hand);  // Create doesn't use this at all on the depot, but it still swings the hand?
-                    return ItemInteractionResult.SUCCESS;
-                }
             }
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ItemInteractionResult.SUCCESS;
         });
     }
 

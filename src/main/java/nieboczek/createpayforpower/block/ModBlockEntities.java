@@ -8,7 +8,6 @@ import nieboczek.createpayforpower.block.powermeter.PowerMeterBlockEntity;
 import nieboczek.createpayforpower.displaysource.ModDisplaySources;
 
 public class ModBlockEntities {
-    // TODO: Make the outputting shaft not move when the power meter has no units left
     public static final BlockEntityEntry<PowerMeterBlockEntity> POWER_METER = CreatePayForPower.REGISTRATE
             .blockEntity("power_meter", PowerMeterBlockEntity::new)
             .visual(() -> SplitShaftVisual::new, false)

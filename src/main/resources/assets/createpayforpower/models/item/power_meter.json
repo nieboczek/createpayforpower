@@ -1,5 +1,5 @@
 {
-  "parent": "createpayforpower:block/power_meter",
+  "parent": "createpayforpower:block/power_meter/base",
   "display": {
     "gui": {
       "rotation": [ 30, 45, 0 ],
