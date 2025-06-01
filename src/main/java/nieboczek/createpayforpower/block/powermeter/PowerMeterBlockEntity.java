@@ -21,7 +21,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.UUID;
 
 public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements MenuProvider {
-    // TODO: when holding a shaft and trying to place one in a compatible position, don't open the UI
     // TODO: visuals don't update properly when time/ksuh ran out
     // Note to self: 1 ksuh = 1000su for 1 hour
     public ItemStackHandler inventory;

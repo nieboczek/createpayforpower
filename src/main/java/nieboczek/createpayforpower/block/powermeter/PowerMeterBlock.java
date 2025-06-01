@@ -1,8 +1,10 @@
 package nieboczek.createpayforpower.block.powermeter;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
+import com.simibubi.create.content.kinetics.base.KineticBlock;
 import com.simibubi.create.content.kinetics.base.KineticBlockEntity;
 import com.simibubi.create.content.kinetics.gauge.GaugeShaper;
 import com.simibubi.create.foundation.block.IBE;
@@ -17,6 +19,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -67,26 +70,25 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
-        if (level.isClientSide)
-            return InteractionResult.SUCCESS;
-
-        return onBlockEntityUse(level, pos, entity -> {
-            if (!entity.canOpen(player))
-                return InteractionResult.SUCCESS;
-
-            player.openMenu(entity, entity::sendToMenu);
-            return InteractionResult.SUCCESS;
-        });
-    }
-
-    @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (AllItems.WRENCH.isIn(stack))
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        if (stack.getItem() instanceof BlockItem blockItem) {
+            if (blockItem.getBlock() instanceof KineticBlock && hasShaftTowards(level, pos, state, hit.getDirection()))
+                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
+
         if (level.isClientSide)
             return ItemInteractionResult.SUCCESS;
 
         if (stack.isEmpty())
-            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return onBlockEntityUseItemOn(level, pos, entity -> {
+                if (!entity.canOpen(player))
+                    return ItemInteractionResult.SUCCESS;
+
+                player.openMenu(entity, entity::sendToMenu);
+                return ItemInteractionResult.SUCCESS;
+            });
 
         return onBlockEntityUseItemOn(level, pos, entity -> {
             if (entity.itemMode) {
