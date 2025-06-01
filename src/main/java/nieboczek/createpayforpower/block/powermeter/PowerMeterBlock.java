@@ -75,7 +75,7 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
             return ItemInteractionResult.SUCCESS;
 
         return onBlockEntityUseItemOn(level, pos, entity -> {
-            if (entity.itemMode && stack.is(entity.getItemFilter())) {
+            if (entity.itemMode && entity.isStackAllowed(stack)) {
                 // TODO: Put the item onto the block entity like the stock ticker
                 stack.consume(1, null);
                 entity.increaseUnits();

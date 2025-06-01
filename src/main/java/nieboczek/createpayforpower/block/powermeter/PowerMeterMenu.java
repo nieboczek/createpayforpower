@@ -1,16 +1,20 @@
 package nieboczek.createpayforpower.block.powermeter;
 
+import com.simibubi.create.content.logistics.filter.FilterItem;
+import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.items.SlotItemHandler;
+import nieboczek.createpayforpower.CreatePayForPower;
 import nieboczek.createpayforpower.ModMenus;
 
 public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
@@ -87,19 +91,34 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
     }
 
     @Override
-    public ItemStack quickMoveStack(Player playerIn, int index) {
+    public ItemStack quickMoveStack(Player player, int index) {
+        // TODO: Stop voiding the filter
         if (index == 0) {
-            contentHolder.inventory.extractItem(index - 36, 1, false);
-            getSlot(index).setChanged();
+            if (contentHolder.inventory.getStackInSlot(0).getItem() instanceof FilterItem) {
+                // these statements should get it into the player's inventory
+                ItemStack stack = contentHolder.inventory.extractItem(0, 1, false);
+                getSlot(0).setChanged();
+                playerInventory.add(stack);
+                return stack;
+            } else {
+                contentHolder.inventory.extractItem(0, 1, false);
+                getSlot(0).setChanged();
+            }
         } else {
             ItemStack stackToInsert = playerInventory.getItem(index - 1);
             ItemStack stack = contentHolder.inventory.getStackInSlot(0);
 
             if (stack.isEmpty()) {
-                ItemStack copy = stackToInsert.copy();
-                copy.setCount(1);
-                contentHolder.inventory.insertItem(0, copy, false);
-                getSlot(0).setChanged();
+                if (stackToInsert.getItem() instanceof FilterItem) {
+                    playerInventory.removeItem(stackToInsert);
+                    contentHolder.inventory.insertItem(0, stackToInsert, false);
+                    getSlot(0).setChanged();
+                } else {
+                    ItemStack copy = stackToInsert.copy();
+                    copy.setCount(1);
+                    contentHolder.inventory.insertItem(0, copy, false);
+                    getSlot(0).setChanged();
+                }
             }
         }
         return ItemStack.EMPTY;

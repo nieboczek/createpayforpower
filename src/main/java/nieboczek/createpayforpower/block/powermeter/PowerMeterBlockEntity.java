@@ -1,6 +1,7 @@
 package nieboczek.createpayforpower.block.powermeter;
 
 import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
+import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -10,7 +11,7 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.items.ItemStackHandler;
@@ -130,8 +131,9 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         return owner.equals(player.getUUID());
     }
 
-    public Item getItemFilter() {
-        return inventory.getStackInSlot(0).getItem();
+    public boolean isStackAllowed(ItemStack stack) {
+        ItemStack filterStack = inventory.getStackInSlot(0);
+        return !filterStack.isEmpty() && FilterItemStack.of(filterStack).test(level, stack);
     }
 
     public void increaseUnits() {
