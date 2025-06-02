@@ -1,14 +1,12 @@
 package nieboczek.createpayforpower.block.powermeter;
 
 import com.simibubi.create.content.logistics.filter.FilterItem;
-import com.simibubi.create.content.logistics.filter.FilterItemStack;
 import com.simibubi.create.foundation.gui.menu.MenuBase;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
@@ -55,19 +53,18 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
 
     @Override
     public void clicked(int slotId, int button, ClickType clickType, Player player) {
-        if (slotId != 0) {
+        if (slotId != 0 || clickType == ClickType.QUICK_MOVE) {
             super.clicked(slotId, button, clickType, player);
             return;
         }
 
         if (clickType == ClickType.THROW) return;
-
         ItemStack held = getCarried();
-        int slot = slotId;
+        ItemStack current = contentHolder.inventory.getStackInSlot(0);
 
         if (clickType == ClickType.CLONE) {
             if (player.isCreative() && held.isEmpty()) {
-                ItemStack stack = contentHolder.inventory.getStackInSlot(slot).copy();
+                ItemStack stack = current.copy();
                 stack.setCount(stack.getMaxStackSize());
                 setCarried(stack);
             }
@@ -75,14 +72,21 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
         }
 
         ItemStack inserted;
+
         if (held.isEmpty()) {
+            if (!current.isEmpty() && current.getItem() instanceof FilterItem)
+                setCarried(current.copy());
+
             inserted = ItemStack.EMPTY;
+        } else if (held.getItem() instanceof FilterItem) {
+            inserted = held.split(1);
         } else {
             inserted = held.copy();
             inserted.setCount(1);
         }
-        contentHolder.inventory.setStackInSlot(slot, inserted);
-        getSlot(slot).setChanged();
+
+        contentHolder.inventory.setStackInSlot(0, inserted);
+        getSlot(0).setChanged();
     }
 
     @Override
@@ -92,33 +96,30 @@ public class PowerMeterMenu extends MenuBase<PowerMeterBlockEntity> {
 
     @Override
     public ItemStack quickMoveStack(Player player, int index) {
-        // TODO: Stop voiding the filter
+        ItemStack stack = contentHolder.inventory.getStackInSlot(0);
+
         if (index == 0) {
-            if (contentHolder.inventory.getStackInSlot(0).getItem() instanceof FilterItem) {
-                // these statements should get it into the player's inventory
-                ItemStack stack = contentHolder.inventory.extractItem(0, 1, false);
+            if (stack.getItem() instanceof FilterItem) {
+                ItemStack filterStack = contentHolder.inventory.extractItem(0, 1, false);
                 getSlot(0).setChanged();
-                playerInventory.add(stack);
-                return stack;
+                playerInventory.add(filterStack);
+                return filterStack;
             } else {
                 contentHolder.inventory.extractItem(0, 1, false);
                 getSlot(0).setChanged();
             }
-        } else {
+        } else if (stack.isEmpty()) {
             ItemStack stackToInsert = playerInventory.getItem(index - 1);
-            ItemStack stack = contentHolder.inventory.getStackInSlot(0);
 
-            if (stack.isEmpty()) {
-                if (stackToInsert.getItem() instanceof FilterItem) {
-                    playerInventory.removeItem(stackToInsert);
-                    contentHolder.inventory.insertItem(0, stackToInsert, false);
-                    getSlot(0).setChanged();
-                } else {
-                    ItemStack copy = stackToInsert.copy();
-                    copy.setCount(1);
-                    contentHolder.inventory.insertItem(0, copy, false);
-                    getSlot(0).setChanged();
-                }
+            if (stackToInsert.getItem() instanceof FilterItem) {
+                playerInventory.removeItem(stackToInsert);
+                contentHolder.inventory.insertItem(0, stackToInsert, false);
+                getSlot(0).setChanged();
+            } else {
+                ItemStack copy = stackToInsert.copy();
+                copy.setCount(1);
+                contentHolder.inventory.insertItem(0, copy, false);
+                getSlot(0).setChanged();
             }
         }
         return ItemStack.EMPTY;

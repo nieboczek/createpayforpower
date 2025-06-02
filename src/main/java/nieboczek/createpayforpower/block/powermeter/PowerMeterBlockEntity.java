@@ -41,7 +41,6 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         this.inventory = new ItemStackHandler(1) {
             @Override
             protected void onContentsChanged(int slot) {
-                super.onContentsChanged(slot);
                 setChanged();
             }
         };
