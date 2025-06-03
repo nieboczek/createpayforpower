@@ -22,5 +22,6 @@
   "createpayforpower.gui.power_meter.tooltip.reset": "Reset time/ksuh left",
   "createpayforpower.gui.power_meter.tooltip.unlock": "Allow UI access for other people",
   "createpayforpower.gui.power_meter.tooltip.lock": "Disallow UI access for other people",
-  "createpayforpower.gui.power_meter.total_used": "Total Used:"
+  "createpayforpower.gui.power_meter.total_used": "Total Used:",
+  "createpayforpower.power_meter.internal_inv_full": "Payment cancelled: Not enough space in Power Meter"
 }

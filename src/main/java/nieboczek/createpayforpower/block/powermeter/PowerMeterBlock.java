@@ -1,6 +1,7 @@
 package nieboczek.createpayforpower.block.powermeter;
 
 import com.simibubi.create.AllItems;
+import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
@@ -75,17 +76,30 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
             return ItemInteractionResult.SUCCESS;
 
         return onBlockEntityUseItemOn(level, pos, entity -> {
-            if (entity.itemMode && entity.isStackAllowed(stack)) {
-                // TODO: Put the item onto the block entity like the stock ticker
-                stack.consume(1, null);
-                entity.increaseUnits();
+            if (entity.itemMode && entity.isStackPayment(stack)) {
+                entity.consumeStack(stack, player);
                 player.swing(hand);
-            } else {
-                if (!entity.canOpen(player))
-                    return ItemInteractionResult.SUCCESS;
-
-                player.openMenu(entity, entity::sendToMenu);
+                return ItemInteractionResult.SUCCESS;
             }
+
+            if (!entity.canOpen(player))
+                return ItemInteractionResult.SUCCESS;
+
+            if (!entity.isReceivedPaymentsEmpty()) {
+                for (int i = 0; i < entity.receivedPayments.getSlots(); i++)
+                    player.getInventory().placeItemBackInInventory(
+                            entity.receivedPayments.extractItem(
+                                    i,
+                                    entity.receivedPayments.getStackInSlot(i).getCount(),
+                                    false
+                            )
+                    );
+
+                AllSoundEvents.playItemPickup(player);
+                return ItemInteractionResult.SUCCESS;
+            }
+
+            player.openMenu(entity, entity::sendToMenu);
             return ItemInteractionResult.SUCCESS;
         });
     }

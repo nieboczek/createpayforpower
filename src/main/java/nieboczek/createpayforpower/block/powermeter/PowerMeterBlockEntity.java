@@ -1,12 +1,22 @@
 package nieboczek.createpayforpower.block.powermeter;
 
+import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
+import com.simibubi.create.content.logistics.BigItemStack;
+import com.simibubi.create.content.logistics.filter.FilterItem;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.logistics.packager.InventorySummary;
+import com.simibubi.create.foundation.item.ItemHelper;
+import com.simibubi.create.foundation.item.SmartInventory;
+import com.simibubi.create.foundation.utility.CreateLang;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -14,15 +24,20 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import nieboczek.createpayforpower.CPFPLang;
+import nieboczek.createpayforpower.CreatePayForPower;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.UUID;
 
 public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements MenuProvider {
     // Note to self: 1 ksuh = 1000su for 1 hour
+    public SmartInventory receivedPayments;
     public ItemStackHandler inventory;
     public boolean hourMeasurement = true;
     public boolean itemMode = true;
@@ -38,6 +53,8 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
 
     public PowerMeterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+        // TODO: this doesn't sync to client
+        this.receivedPayments = new SmartInventory(27, this);
         this.inventory = new ItemStackHandler(1) {
             @Override
             protected void onContentsChanged(int slot) {
@@ -49,6 +66,7 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         if (!clientPacket) {
+            compound.put("receivedPayments", receivedPayments.serializeNBT(registries));
             compound.put("Inventory", inventory.serializeNBT(registries));
         }
 
@@ -71,6 +89,7 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         if (!clientPacket) {
+            receivedPayments.deserializeNBT(registries, compound.getCompound("receivedPayments"));
             inventory.deserializeNBT(registries, compound.getCompound("Inventory"));
         }
 
@@ -122,15 +141,60 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         }
     }
 
+    @Override
+    public void destroy() {
+        ItemHelper.dropContents(level, worldPosition, receivedPayments);
+        ItemStack stack = inventory.getStackInSlot(0);
+
+        if (!stack.isEmpty()) {
+            if (!(stack.getItem() instanceof FilterItem)) return;
+            Containers.dropItemStack(level, worldPosition.getX(), worldPosition.getY(), worldPosition.getZ(), stack);
+        }
+
+        super.destroy();
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        if (isReceivedPaymentsEmpty())
+            return false;
+
+        if (!canOpen(Minecraft.getInstance().player))
+            return false;
+
+        CreateLang.translate("stock_ticker.contains_payments")
+                .style(ChatFormatting.WHITE)
+                .forGoggles(tooltip);
+
+        InventorySummary summary = new InventorySummary();
+
+        for (int i = 0; i < receivedPayments.getSlots(); i++)
+            summary.add(receivedPayments.getStackInSlot(i));
+
+        for (BigItemStack entry : summary.getStacksByCount())
+            CreateLang.builder()
+                    .text(Component.translatable(entry.stack.getDescriptionId())
+                            .getString() + " x" + entry.count)
+                    .style(ChatFormatting.GREEN)
+                    .forGoggles(tooltip);
+
+        CreateLang.translate("stock_ticker.click_to_retrieve")
+                .style(ChatFormatting.GRAY)
+                .forGoggles(tooltip);
+
+        return true;
+    }
+
     public boolean canOpen(Player player) {
-        return unlocked || isOwner(player);
+        return unlocked && isOwner(player);
     }
 
     public boolean isOwner(Player player) {
         return owner.equals(player.getUUID());
     }
 
-    public boolean isStackAllowed(ItemStack stack) {
+    public boolean isStackPayment(ItemStack stack) {
         ItemStack filterStack = inventory.getStackInSlot(0);
         return !filterStack.isEmpty() && FilterItemStack.of(filterStack).test(level, stack);
     }
@@ -138,7 +202,7 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
     public void increaseUnits() {
         unitsLeft += increaseBy;
         setChanged();
-        level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2 | 16);  // Update visuals
+        level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 2 | 16);  // Update visuals
         attachKinetics();
     }
 
@@ -146,7 +210,7 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         if (unitsLeft <= 0) {
             ticksPassed = 0;
             setChanged();
-            level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2 | 16);  // Update visuals
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 2 | 16);  // Update visuals
             detachKinetics();
         }
     }
@@ -175,6 +239,49 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         } else {
             return seconds + "s";
         }
+    }
+
+    public boolean isReceivedPaymentsEmpty() {
+        for (int i = 0; i < receivedPayments.getSlots(); i++)
+            if (!receivedPayments.getStackInSlot(i).isEmpty())
+                return false;
+
+        return true;
+    }
+
+    public void consumeStack(ItemStack stack, Player player) {
+        boolean success = false;
+        ItemStack paymentStack = stack.copyWithCount(1);
+
+        for (int i = 0; i < receivedPayments.getSlots(); i++) {
+            ItemStack current = receivedPayments.getStackInSlot(i);
+            boolean enoughSlots = current.getCount() < current.getMaxStackSize();
+
+            if (current.isEmpty()) {
+                receivedPayments.setStackInSlot(i, paymentStack);
+                success = true;
+                break;
+            } else if (enoughSlots && current.is(paymentStack.getItem())) {
+                ItemStack newStack = current.copyWithCount(current.getCount() + 1);
+                receivedPayments.setStackInSlot(i, newStack);
+                success = true;
+                break;
+            }
+        }
+
+        if (!success) {
+            AllSoundEvents.DENY.playOnServer(level, player.blockPosition());
+            CPFPLang.translate("power_meter.internal_inv_full")
+                    .style(ChatFormatting.RED)
+                    .sendStatus(player);
+            return;
+        }
+
+//        if (!order.isEmpty())
+//            AllSoundEvents.STOCK_TICKER_TRADE.playOnServer(level, tickerBE.getBlockPos());
+
+        stack.consume(1, null);
+        increaseUnits();
     }
 
     @Override
