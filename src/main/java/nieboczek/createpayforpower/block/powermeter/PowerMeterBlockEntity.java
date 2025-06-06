@@ -5,6 +5,7 @@ import com.simibubi.create.content.kinetics.transmission.SplitShaftBlockEntity;
 import com.simibubi.create.content.logistics.BigItemStack;
 import com.simibubi.create.content.logistics.filter.FilterItem;
 import com.simibubi.create.content.logistics.filter.FilterItemStack;
+import com.simibubi.create.content.logistics.packagePort.PackagePortBlockEntity;
 import com.simibubi.create.content.logistics.packager.InventorySummary;
 import com.simibubi.create.foundation.item.ItemHelper;
 import com.simibubi.create.foundation.item.SmartInventory;
@@ -53,7 +54,6 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
 
     public PowerMeterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        // TODO: this doesn't sync to client
         this.receivedPayments = new SmartInventory(27, this);
         this.inventory = new ItemStackHandler(1) {
             @Override
@@ -66,10 +66,10 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         if (!clientPacket) {
-            compound.put("receivedPayments", receivedPayments.serializeNBT(registries));
             compound.put("Inventory", inventory.serializeNBT(registries));
         }
 
+        compound.put("receivedPayments", receivedPayments.serializeNBT(registries));
         compound.putBoolean("hourMeasurement", hourMeasurement);
         compound.putBoolean("itemMode", itemMode);
         compound.putBoolean("unlocked", unlocked);
@@ -89,10 +89,10 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         if (!clientPacket) {
-            receivedPayments.deserializeNBT(registries, compound.getCompound("receivedPayments"));
             inventory.deserializeNBT(registries, compound.getCompound("Inventory"));
         }
 
+        receivedPayments.deserializeNBT(registries, compound.getCompound("receivedPayments"));
         hourMeasurement = compound.getBoolean("hourMeasurement");
         itemMode = compound.getBoolean("itemMode");
         unlocked = compound.getBoolean("unlocked");
@@ -157,7 +157,7 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
     @Override
     @OnlyIn(Dist.CLIENT)
     public boolean addToTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
-        if (isReceivedPaymentsEmpty())
+        if (receivedPayments.isEmpty())
             return false;
 
         if (!canOpen(Minecraft.getInstance().player))
@@ -239,14 +239,6 @@ public class PowerMeterBlockEntity extends SplitShaftBlockEntity implements Menu
         } else {
             return seconds + "s";
         }
-    }
-
-    public boolean isReceivedPaymentsEmpty() {
-        for (int i = 0; i < receivedPayments.getSlots(); i++)
-            if (!receivedPayments.getStackInSlot(i).isEmpty())
-                return false;
-
-        return true;
     }
 
     public void consumeStack(ItemStack stack, Player player) {

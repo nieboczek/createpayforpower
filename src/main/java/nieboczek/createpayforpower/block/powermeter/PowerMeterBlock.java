@@ -85,7 +85,7 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
             if (!entity.canOpen(player))
                 return ItemInteractionResult.SUCCESS;
 
-            if (!entity.isReceivedPaymentsEmpty()) {
+            if (!entity.receivedPayments.isEmpty()) {
                 for (int i = 0; i < entity.receivedPayments.getSlots(); i++)
                     player.getInventory().placeItemBackInInventory(
                             entity.receivedPayments.extractItem(
