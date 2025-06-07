@@ -25,7 +25,9 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
     }
 
     @Override
-    protected void init() {  // FIXME: In Create Mod's code we have an additional + 2 (or + 4) on the height. Consider adding
+    protected void init() {
+        // TODO: Display the block like the sequenced gearshift or really any block with a menu
+        // TODO: In Create Mod's code we have an additional + 2 (or + 4) on the height. Consider adding
         setWindowSize(BG.getWidth(), BG.getHeight() + AllGuiTextures.PLAYER_INVENTORY.getHeight());
         setWindowOffset(0, 0); // +x = right
         super.init();

@@ -7,8 +7,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import nieboczek.createpayforpower.block.ModBlockEntities;
+import nieboczek.createpayforpower.block.directionalnetwork.DirectionalNetworkKineticBlock;
 
-public class NetworkStressLimiterBlock extends DirectionalKineticBlock implements IBE<NetworkStressLimiterBlockEntity> {
+public class NetworkStressLimiterBlock extends DirectionalNetworkKineticBlock<NetworkStressLimiterBlockEntity> {
     public NetworkStressLimiterBlock(Properties properties) {
         super(properties);
     }
@@ -20,12 +22,7 @@ public class NetworkStressLimiterBlock extends DirectionalKineticBlock implement
 
     @Override
     public BlockEntityType<? extends NetworkStressLimiterBlockEntity> getBlockEntityType() {
-        return null;//ModBlockEntities.NETWORK_STRESS_LIMITER.get();
-    }
-
-    @Override
-    public void onNeighborChange(BlockState state, LevelReader level, BlockPos pos, BlockPos neighbor) {
-        withBlockEntityDo(level, pos, NetworkStressLimiterBlockEntity::updateOutput);
+        return ModBlockEntities.NETWORK_STRESS_LIMITER.get();
     }
 
     @Override

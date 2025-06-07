@@ -4,9 +4,10 @@
   "minVersion": "0.8",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "GaugeShaperMixin",
     "KineticNetworkMixin",
-    "TorquePropagatorMixin",
-    "GaugeShaperMixin"
+    "RotationPropagatorMixin",
+    "TorquePropagatorMixin"
   ],
   "injectors": {
     "defaultRequire": 1
