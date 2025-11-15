@@ -7,7 +7,6 @@ import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
 import net.createmod.catnip.lang.FontHelper;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.neoforged.bus.api.IEventBus;
@@ -28,18 +27,19 @@ public class CreatePayForPower {
 
     public static final CreateRegistrate REGISTRATE = CreateRegistrate.create(MOD_ID)
             .setTooltipModifierFactory(item ->
-                new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
-                        .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
+                    new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
+                            .andThen(TooltipModifier.mapNull(KineticStats.create(item)))
             );
 
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TAB_REGISTER = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
-
-    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TAB_REGISTER.register("group",
+    public static final DeferredHolder<CreativeModeTab, CreativeModeTab> CREATIVE_TAB = CREATIVE_MODE_TAB_REGISTER.register(
+            "main",
             () -> CreativeModeTab.builder()
-                    .title(Component.literal("Create: Pay for Power"))
+                    .title(CPFPLang.translate("item_group.main").component())
                     .withTabsBefore(AllCreativeModeTabs.PALETTES_CREATIVE_TAB.getKey())
                     .icon(ModBlocks.POWER_METER::asStack)
-                    .build());
+                    .build()
+    );
 
     public CreatePayForPower(IEventBus modEventBus) {
         REGISTRATE.registerEventListeners(modEventBus);

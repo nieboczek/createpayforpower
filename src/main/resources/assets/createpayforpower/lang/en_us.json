@@ -4,11 +4,11 @@
   "createpayforpower.display_source.power_meter_status": "Power Meter Status",
   "createpayforpower.display_source.power_meter_status.hours_used": "Total Hours Used",
   "createpayforpower.display_source.power_meter_status.ksuh": "Total ksuh Used",
-  "createpayforpower.display_source.power_meter_status.ksuh_left": "ksuh Left",
+  "createpayforpower.display_source.power_meter_status.ksuh_left": "Ksuh Left",
   "createpayforpower.display_source.power_meter_status.time_left": "Time Left",
   "createpayforpower.gui.power_meter.add": "Add",
   "createpayforpower.gui.power_meter.amount": "Amount",
-  "createpayforpower.gui.power_meter.ksuh_left": "ksuh Left:",
+  "createpayforpower.gui.power_meter.ksuh_left": "Ksuh Left:",
   "createpayforpower.gui.power_meter.measurement": "Measurement",
   "createpayforpower.gui.power_meter.measurement.ksuh": "ksuh",
   "createpayforpower.gui.power_meter.measurement.hour": "hours",
@@ -20,8 +20,9 @@
   "createpayforpower.gui.power_meter.on.redstone": "On Receive Redstone Signal:",
   "createpayforpower.gui.power_meter.time_left": "Time Left:",
   "createpayforpower.gui.power_meter.tooltip.reset": "Reset time/ksuh left",
-  "createpayforpower.gui.power_meter.tooltip.unlock": "Allow UI access for other people",
-  "createpayforpower.gui.power_meter.tooltip.lock": "Disallow UI access for other people",
+  "createpayforpower.gui.power_meter.tooltip.unlock": "Allow UI access for other Players",
+  "createpayforpower.gui.power_meter.tooltip.lock": "Disallow UI access for other Players",
   "createpayforpower.gui.power_meter.total_used": "Total Used:",
-  "createpayforpower.power_meter.internal_inv_full": "Payment cancelled: Not enough space in Power Meter"
+  "createpayforpower.power_meter.internal_inv_full": "Payment cancelled: Not enough space in Power Meter",
+  "createpayforpower.item_group.main": "Create: Pay for Power"
 }

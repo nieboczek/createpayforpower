@@ -4,25 +4,41 @@ import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import nieboczek.createpayforpower.block.ModBlockEntities;
-import nieboczek.createpayforpower.block.directionalnetwork.DirectionalNetworkKineticBlock;
 
-public class NetworkStressLimiterBlock extends DirectionalNetworkKineticBlock<NetworkStressLimiterBlockEntity> {
+// TODO: make this a double block
+public class NetworkStressLimiterBlock extends DirectionalKineticBlock implements IBE<NetworkStressLimiterBlockEntity> {
+    public static final BooleanProperty FRONT_HALF = BooleanProperty.create("front_half");
+
     public NetworkStressLimiterBlock(Properties properties) {
         super(properties);
+        registerDefaultState(getStateDefinition().any().setValue(FACING, Direction.NORTH).setValue(FRONT_HALF, true));
     }
 
     @Override
-    public Class<NetworkStressLimiterBlockEntity> getBlockEntityClass() {
-        return NetworkStressLimiterBlockEntity.class;
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(FRONT_HALF);
     }
 
     @Override
-    public BlockEntityType<? extends NetworkStressLimiterBlockEntity> getBlockEntityType() {
-        return ModBlockEntities.NETWORK_STRESS_LIMITER.get();
+    protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Block.box(3, 0, 3, 13, 8, 13);
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        IBE.onRemove(state, level, pos, newState);
     }
 
     @Override
@@ -32,11 +48,16 @@ public class NetworkStressLimiterBlock extends DirectionalNetworkKineticBlock<Ne
 
     @Override
     public boolean hasShaftTowards(LevelReader world, BlockPos pos, BlockState state, Direction face) {
-        return face == state.getValue(FACING).getOpposite();
+        return state.getValue(FACING) == (state.getValue(FRONT_HALF) ? face.getOpposite() : face);
     }
 
-//    @Override
-//    public VoxelShape getShape(BlockState state, BlockGetter worldIn, BlockPos pos, CollisionContext context) {
-//        return GAUGE.get(state.getValue(FACING), state.getValue(AXIS_ALONG_FIRST_COORDINATE));
-//    }
+    @Override
+    public Class<NetworkStressLimiterBlockEntity> getBlockEntityClass() {
+        return NetworkStressLimiterBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<NetworkStressLimiterBlockEntity> getBlockEntityType() {
+        return ModBlockEntities.NETWORK_STRESS_LIMITER.get();
+    }
 }

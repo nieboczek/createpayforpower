@@ -5,7 +5,6 @@ import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.content.kinetics.base.DirectionalAxisKineticBlock;
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.content.kinetics.base.KineticBlock;
-import com.simibubi.create.content.kinetics.gauge.GaugeShaper;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,11 +29,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import nieboczek.createpayforpower.block.ModBlockEntities;
-import nieboczek.createpayforpower.mixin.GaugeShaperMixin;
 
 public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<PowerMeterBlockEntity> {
-    public static final GaugeShaper SHAPER = GaugeShaperMixin.callMake();
-
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
     public PowerMeterBlock(Properties properties) {
@@ -123,7 +119,7 @@ public class PowerMeterBlock extends DirectionalAxisKineticBlock implements IBE<
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
-        return SHAPER.get(state.getValue(FACING), state.getValue(AXIS_ALONG_FIRST_COORDINATE));
+        return Block.box(3, 0, 3, 13, 8, 13);
     }
 
     @Override

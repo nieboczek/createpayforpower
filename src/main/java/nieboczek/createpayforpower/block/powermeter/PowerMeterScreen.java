@@ -26,7 +26,7 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
 
     @Override
     protected void init() {
-        // TODO: Display the block like the sequenced gearshift or really any block with a menu
+        // TODO: Display the visual block like the sequenced gearshift or really any block with a menu
         // TODO: In Create Mod's code we have an additional + 2 (or + 4) on the height. Consider adding
         setWindowSize(BG.getWidth(), BG.getHeight() + AllGuiTextures.PLAYER_INVENTORY.getHeight());
         setWindowOffset(0, 0); // +x = right
@@ -85,6 +85,9 @@ public class PowerMeterScreen extends AbstractSimiContainerScreen<PowerMeterMenu
         lockButton.green = !menu.contentHolder.unlocked;
         lockButton.setToolTip(CPFPLang.gui("power_meter.tooltip.lock").component());
         lockButton.withCallback(() -> {
+            if (menu.player.getUUID() != menu.contentHolder.owner) {
+                return;
+            }
             unlockButton.green = false;
             lockButton.green = true;
             sendPacket(Option.LOCK);
